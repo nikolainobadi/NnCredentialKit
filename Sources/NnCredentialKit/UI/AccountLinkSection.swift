@@ -9,34 +9,50 @@ import SwiftUI
 import NnSwiftUIKit
 
 struct AccountLinkSection: View {
+    @StateObject var viewModel: AccountLinkViewModel
     
     var body: some View {
         Section("Sign-in Methods") {
-            
+            ForEach(viewModel.linkItems) { item in
+                LinkRow(item: item) {
+                    
+                }
+            }
         }
+        .withReauthentication(shouldReauthenticate: $viewModel.shouldReauthenticate)
     }
 }
 
 
 // MARK: - Row
 fileprivate struct LinkRow: View {
+    let item: LinkItem
+    let linkAction: () async throws -> Void
+    
     var body: some View {
         HStack {
             VStack {
-                
+                // TODO: - linkItem name
+                // TODO: - optional email
             }
             
-            NnAsyncTryButton("", action: { })
+            NnAsyncTryButton(action: linkAction) {
+                Text(item.buttonText)
+                    .underline()
+            }
         }
     }
 }
 
 
 // MARK: - Preview
-#Preview {
-    AccountLinkSection()
-}
+//#Preview {
+//    AccountLinkSection()
+//}
 
-final class AccountLinkViewModel: ObservableObject {
-    
+
+fileprivate extension LinkItem {
+    var buttonText: String {
+        return isLinked ? "Unlink" : "Link"
+    }
 }
