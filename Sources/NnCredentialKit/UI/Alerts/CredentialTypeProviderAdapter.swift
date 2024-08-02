@@ -45,8 +45,7 @@ extension CredentialTypeProviderAdapter: CredentialReauthenticationProvider {
         case .google:
             return try await loadGoogleCredential()
         case .emailPassword:
-            // TODO: -
-            fatalError()
+            return await loadEmailReauthenticationCredential(selectedProvider.linkedEmail)
         }
     }
 }
@@ -73,6 +72,10 @@ private extension CredentialTypeProviderAdapter {
         
         // TODO: - may need to change to include displayName
         return .google(tokenId: info.tokenId, accessToken: info.accessTokenId)
+    }
+    
+    func loadEmailReauthenticationCredential(_ email: String) async -> CredentialType? {
+        return nil
     }
     
     func loadNewEmailSignUpCredential() async throws -> CredentialType? {

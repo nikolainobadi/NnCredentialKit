@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  CredentialAlertHandler.swift
 //  
 //
 //  Created by Nikolai Nobadi on 8/2/24.
@@ -22,8 +22,16 @@ extension CredentialAlertHandler {
 extension CredentialAlertHandler {
     func loadEmailSignUpInfo() async -> EmailSignUpInfo? {
         return await withCheckedContinuation { continuation in
-            showEmailPasswordAlert("", withConfirmation: true) { info in
+            showEmailPasswordAlert("Please enter your new email and password.") { info in
                 continuation.resume(returning: info)
+            }
+        }
+    }
+    
+    func loadPassword(_ message: String) async -> String? {
+        return await withCheckedContinuation { continuation in
+            showPasswordAlert(message) { password in
+                continuation.resume(returning: password)
             }
         }
     }
@@ -32,7 +40,32 @@ extension CredentialAlertHandler {
 
 // MARK: - Private Methods
 private extension CredentialAlertHandler {
-    func showEmailPasswordAlert(_ message: String, withConfirmation: Bool, completion: @escaping (EmailSignUpInfo?) -> Void) {
+    func showPasswordAlert(_ message: String, completion: @escaping (String?) -> Void) {
+        let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
+        
+        Task { @MainActor in
+            alertController.addTextField { textField in
+                textField.configureForPassword(isConfirm: false)
+            }
+            
+            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                guard let password = alertController.textFields?[0].text, !password.isEmpty else {
+                    completion(nil)
+                    return
+                }
+                
+                completion(password)
+            })
+            
+            alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                completion(nil)
+            })
+            
+            alertController.presentInMainThread()
+        }
+    }
+    
+    func showEmailPasswordAlert(_ message: String, completion: @escaping (EmailSignUpInfo?) -> Void) {
         let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
         
         Task { @MainActor in
@@ -44,27 +77,15 @@ private extension CredentialAlertHandler {
                 textField.configureForPassword(isConfirm: false)
             }
             
-            if withConfirmation {
-                alertController.addTextField { textField in
-                    textField.configureForPassword(isConfirm: true)
-                }
+            alertController.addTextField { textField in
+                textField.configureForPassword(isConfirm: true)
             }
             
             alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                guard let email = alertController.textFields?[0].text, let password = alertController.textFields?[1].text else {
-                    completion(nil)
-                    return
-                }
-                
-                if withConfirmation {
-                    guard let confirmPassword = alertController.textFields?[2].text else {
-                        completion(nil)
-                        return
-                    }
-                    
+                if let email = alertController.textFields?[0].text, let password = alertController.textFields?[1].text, let confirmPassword = alertController.textFields?[2].text {
                     completion(.init(email: email, password: password, confirm: confirmPassword))
                 } else {
-                    completion(.init(email: email, password: password, confirm: ""))
+                    completion(nil)
                 }
             })
             
