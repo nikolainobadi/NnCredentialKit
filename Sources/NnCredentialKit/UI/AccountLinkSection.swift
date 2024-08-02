@@ -13,9 +13,9 @@ struct AccountLinkSection: View {
     
     var body: some View {
         Section("Sign-in Methods") {
-            ForEach(viewModel.linkItems) { item in
-                LinkRow(item: item) {
-                    
+            ForEach(viewModel.providers) { provider in
+                LinkRow(provider: provider) {
+                    try await viewModel.linkAction(provider)
                 }
             }
         }
@@ -25,7 +25,7 @@ struct AccountLinkSection: View {
 
 // MARK: - Row
 fileprivate struct LinkRow: View {
-    let item: LinkItem
+    let provider: AuthProvider
     let linkAction: () async throws -> Void
     
     var body: some View {
@@ -36,7 +36,7 @@ fileprivate struct LinkRow: View {
             }
             
             NnAsyncTryButton(action: linkAction) {
-                Text(item.buttonText)
+                Text(provider.buttonText)
                     .underline()
             }
         }
@@ -50,7 +50,7 @@ fileprivate struct LinkRow: View {
 //}
 
 
-fileprivate extension LinkItem {
+fileprivate extension AuthProvider {
     var buttonText: String {
         return isLinked ? "Unlink" : "Link"
     }
