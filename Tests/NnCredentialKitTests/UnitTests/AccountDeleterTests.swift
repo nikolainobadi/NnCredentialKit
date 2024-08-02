@@ -55,23 +55,14 @@ extension AccountDeleterTests {
 // MARK: - Helper Classes
 extension AccountDeleterTests {
     class StubDelegate: DeleteAccountDelegate {
-        private let firstResult: AccountCredentialResult
-        private let secondResult: AccountCredentialResult
-        
-        private var shouldReturnFirstResult = true
+        private let store: StubResultStore
         
         init(firstResult: AccountCredentialResult, secondResult: AccountCredentialResult) {
-            self.firstResult = firstResult
-            self.secondResult = secondResult
+            self.store = .init(firstResult: firstResult, secondResult: secondResult)
         }
         
         func deleteAccount() async -> AccountCredentialResult {
-            guard shouldReturnFirstResult else {
-                return secondResult
-            }
-            
-            shouldReturnFirstResult = false
-            return firstResult
+            return store.getResult()
         }
 
         // MARK: - Unused
