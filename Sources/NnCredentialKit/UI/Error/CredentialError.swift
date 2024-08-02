@@ -9,5 +9,6 @@ import Foundation
 
 enum CredentialError: Error {
     case cancelled
+    case passwordsMustMatch
     case cannotUnlinkOnlyProvider
 }

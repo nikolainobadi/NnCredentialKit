@@ -21,9 +21,8 @@ extension CredentialTypeProviderAdapter: CredentialTypeProvider {
             return try await loadAppleCredential()
         case .google:
             return try await loadGoogleCredential()
-            
         case .emailPassword:
-            return .emailPassword(email: "", password: "")
+            return try await loadNewEmailSignUpCredential()
         }
     }
 }
@@ -53,5 +52,14 @@ private extension CredentialTypeProviderAdapter {
         
         // TODO: - may need to change to include displayName
         return .google(tokenId: info.tokenId, accessToken: info.accessTokenId)
+    }
+    
+    func loadNewEmailSignUpCredential() async throws -> CredentialType? {
+        guard let info = await alertHandler.loadEmailSignUpInfo() else { return nil }
+        guard info.passwordsMatch else {
+            throw CredentialError.passwordsMustMatch
+        }
+        
+        return .emailPassword(email: info.email, password: info.password)
     }
 }
