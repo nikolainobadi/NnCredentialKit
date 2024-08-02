@@ -75,8 +75,8 @@ extension AccountDeleterTests {
         }
 
         // MARK: - Unused
-        func loadLinkedProviders() -> [NnCredentialKit.AuthProvider] { [] }
-        func reauthenticate(with credientialType: NnCredentialKit.CredentialType) async throws { }
+        func loadLinkedProviders() -> [AuthProvider] { [] }
+        func reauthenticate(with credientialType: CredentialType) async throws { }
     }
 }
 

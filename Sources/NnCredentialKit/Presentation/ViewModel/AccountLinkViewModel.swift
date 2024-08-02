@@ -11,10 +11,10 @@ final class AccountLinkViewModel: ObservableObject {
     @Published var providers: [AuthProvider]
     
     private let delegate: AccountLinkDelegate
-    private let reauthenticator: ReauthenticationAdapter
+    private let reauthenticator: Reauthenticator
     private let credentialProvider: CredentialTypeProvider
     
-    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: ReauthenticationAdapter, credentialProvider: CredentialTypeProvider) {
+    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: Reauthenticator, credentialProvider: CredentialTypeProvider) {
         self.delegate = delegate
         self.providers = providers
         self.reauthenticator = reauthenticator
