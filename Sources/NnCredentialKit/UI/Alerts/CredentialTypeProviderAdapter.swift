@@ -31,13 +31,34 @@ extension CredentialTypeProviderAdapter: CredentialTypeProvider {
 // MARK: - CredentialReauthenticationProvider
 extension CredentialTypeProviderAdapter: CredentialReauthenticationProvider {
     func loadReauthCredential(linkedProviders: [AuthProvider]) async throws -> CredentialType? {
-        return nil
+        if linkedProviders.isEmpty {
+            fatalError()
+        }
+        
+        guard let selectedProvider = selectProvider(from: linkedProviders) else {
+            return nil
+        }
+        
+        switch selectedProvider.type {
+        case .apple:
+            return try await loadAppleCredential()
+        case .google:
+            return try await loadGoogleCredential()
+        case .emailPassword:
+            // TODO: -
+            fatalError()
+        }
     }
 }
 
 
 // MARK: - Private Methods
 private extension CredentialTypeProviderAdapter {
+    func selectProvider(from linkedProviders: [AuthProvider]) -> AuthProvider? {
+        // TODO: - 
+        return nil
+    }
+    
     func loadAppleCredential() async throws -> CredentialType? {
         guard let info = try await AppleSignInCoordinator().createAppleTokenInfo(requestedScopes: [.email]) else { return nil }
         
