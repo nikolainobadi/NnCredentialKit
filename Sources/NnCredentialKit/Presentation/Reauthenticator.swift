@@ -14,6 +14,7 @@ final class Reauthenticator {
 }
 
 
+// MARK: - 
 extension Reauthenticator {
     func start() async throws {
         let linkedProviders = delegate.loadLinkedProviders()
@@ -33,8 +34,10 @@ extension Reauthenticator {
         
         switch selectedProvider.providerType {
         case .apple:
+            // TODO: -
             return nil
         case .google:
+            // TODO: -
             return nil
         case .emailPassword:
             // TODO: - show password alert
@@ -58,4 +61,3 @@ protocol ReauthenticationDelegate {
     func loadLinkedProviders() -> [AuthProvider]
     func reauthenticate(with credientialType: CredentialType) async throws
 }
-
