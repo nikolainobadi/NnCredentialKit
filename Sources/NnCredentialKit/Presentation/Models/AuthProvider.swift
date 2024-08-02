@@ -37,6 +37,7 @@ extension AuthProvider {
 }
 
 // MARK: - Dependencies
-public enum AuthProviderType {
+public enum AuthProviderType: String, CaseIterable {
     case apple, google, emailPassword
+    
 }

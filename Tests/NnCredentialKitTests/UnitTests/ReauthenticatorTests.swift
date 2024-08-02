@@ -23,14 +23,67 @@ final class ReauthenticatorTests: XCTestCase {
             try await sut.start(actionAfterReauth: { })
         }
     }
+    
+    func test_cancelled_error_is_thrown_when_reauthentication_is_refused() async {
+        let linkedProviders = makeLinkedProviders()
+        let sut = makeSUT(linkedProviders: linkedProviders).sut
+        
+        await asyncAssertThrownError(expectedError: CredentialError.cancelled) {
+            try await sut.start(actionAfterReauth: { })
+        }
+    }
+    
+    func test_selected_credential_is_used_to_reauthenticate() async {
+        let linkedProviders = makeLinkedProviders()
+        let selectedCredential = makeEmailPasswordCredential()
+        let (sut, delegate) = makeSUT(linkedProviders: linkedProviders, credentialType: selectedCredential)
+        
+        await asyncAssertNoErrorThrown {
+            try await sut.start(actionAfterReauth: { })
+        }
+        
+        XCTAssertNotNil(delegate.credentialType)
+    }
+    
+    func test_action_is_performed_after_successful_reauthentication() async {
+        let exp = expectation(description: "waiting for reauth")
+        
+        let linkedProviders = makeLinkedProviders()
+        let selectedCredential = makeEmailPasswordCredential()
+        let (sut, _) = makeSUT(linkedProviders: linkedProviders, credentialType: selectedCredential)
+        
+        await asyncAssertNoErrorThrown {
+            try await sut.start {
+                exp.fulfill()
+            }
+        }
+        
+        await fulfillment(of: [exp], timeout: 0.1)
+    }
+    
+    func test_action_is_not_performed_when_reauthentication_failes() async {
+        let exp = expectation(description: "waiting for reauth")
+        
+        exp.isInverted = true
+        
+        let linkedProviders = makeLinkedProviders()
+        let selectedCredential = makeEmailPasswordCredential()
+        let (sut, _) = makeSUT(linkedProviders: linkedProviders, credentialType: selectedCredential, throwDelegateError: true)
+        
+        try? await sut.start {
+            XCTFail("unexpeted completion call")
+        }
+        
+        await fulfillment(of: [exp], timeout: 0.1)
+    }
 }
 
 
 // MARK: - SUT
 extension ReauthenticatorTests {
-    func makeSUT(linkedProviders: [AuthProvider] = [], credentialType: CredentialType? = nil, throwError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> (sut: Reauthenticator, delegate: MockDelegate) {
-        let delegate = MockDelegate(throwError: throwError, linkedProviders: linkedProviders)
-        let provider = StubProvider(throwError: throwError, credentialType: credentialType)
+    func makeSUT(linkedProviders: [AuthProvider] = [], credentialType: CredentialType? = nil, throwDelegateError: Bool = false, throwProviderError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> (sut: Reauthenticator, delegate: MockDelegate) {
+        let delegate = MockDelegate(throwError: throwDelegateError, linkedProviders: linkedProviders)
+        let provider = StubProvider(throwError: throwProviderError, credentialType: credentialType)
         let sut = Reauthenticator(delegate: delegate, credentialProvider: provider)
         
         trackForMemoryLeaks(sut, file: file, line: line)

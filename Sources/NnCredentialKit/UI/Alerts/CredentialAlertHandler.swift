@@ -35,12 +35,9 @@ extension CredentialAlertHandler {
     }
     
     func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (Result<AuthProvider?, CredentialError>) -> Void) {
-        guard !providers.isEmpty else {
-            completion(.failure(.emptyAuthProviders))
-            return 
-        }
         
         Task { @MainActor in
+            /// providers should NOT be empty as it should be checked before passing into this method
             let hasMultipleProviders = providers.count > 1
             let message = hasMultipleProviders ? "" : "This is a sensitive action. In order to proceed, you must reauthenticate your account."
             let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)

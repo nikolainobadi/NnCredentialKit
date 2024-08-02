@@ -20,6 +20,11 @@ final class Reauthenticator {
 extension Reauthenticator {
     func start(actionAfterReauth: @escaping () async throws -> Void) async throws {
         let linkedProviders = delegate.loadLinkedProviders()
+        
+        if linkedProviders.isEmpty {
+            throw CredentialError.emptyAuthProviders
+        }
+        
         guard let selectedCredentialType = try await credentialProvider.loadReauthCredential(linkedProviders: linkedProviders) else {
             throw CredentialError.cancelled
         }
