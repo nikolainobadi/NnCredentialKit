@@ -7,9 +7,11 @@
 
 final class Reauthenticator {
     private let delegate: ReauthenticationDelegate
+    private let credentialProvider: CredentialReauthenticationProvider
     
-    init(delegate: ReauthenticationDelegate) {
+    init(delegate: ReauthenticationDelegate, credentialProvider: CredentialReauthenticationProvider) {
         self.delegate = delegate
+        self.credentialProvider = credentialProvider
     }
 }
 
@@ -56,6 +58,9 @@ extension Reauthenticator {
 
 
 // MARK: - Dependencies
+protocol CredentialReauthenticationProvider {
+    func loadReauthCredential(for type: AuthProviderType) async throws -> CredentialType?
+}
 public protocol ReauthenticationDelegate {
     func loadLinkedProviders() -> [AuthProvider]
     func reauthenticate(with credientialType: CredentialType) async throws

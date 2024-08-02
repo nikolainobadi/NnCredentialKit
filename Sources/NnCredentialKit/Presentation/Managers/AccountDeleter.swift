@@ -7,19 +7,27 @@
 
 import SwiftUI
 
-final class AccountDeleter {
+public final class AccountDeleter {
     private let delegate: DeleteAccountDelegate
     private let reauthenticator: Reauthenticator
     
-    init(delegate: DeleteAccountDelegate) {
+    internal init(delegate: DeleteAccountDelegate, reauthenticator: Reauthenticator) {
         self.delegate = delegate
-        self.reauthenticator = .init(delegate: delegate)
+        self.reauthenticator = reauthenticator
+    }
+}
+
+
+// MARK: - Init
+public extension AccountDeleter {
+    convenience init(delegate: DeleteAccountDelegate) {
+        self.init(delegate: delegate, reauthenticator: .init(delegate: delegate, credentialProvider: CredentialTypeProviderAdapter()))
     }
 }
 
 
 // MARK: - DeleteAccount
-extension AccountDeleter {
+public extension AccountDeleter {
     func deleteAccount() async throws -> Void {
         let result = await delegate.deleteAccount()
         
