@@ -8,10 +8,8 @@
 import UIKit
 import NnSwiftUIKit
 
-final class CredentialAlertHandler { }
-
-@MainActor
-extension CredentialAlertHandler {
+final class CredentialAlertHandler {
+    @MainActor
     func getTopVC() -> UIViewController? {
         return UIApplication.shared.getTopViewController()
     }
@@ -36,8 +34,40 @@ extension CredentialAlertHandler {
         }
     }
     
-    func showReauthenticationAlert() async throws {
+    func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (Result<AuthProvider?, CredentialError>) -> Void) {
+        guard !providers.isEmpty else {
+            completion(.failure(.emptyAuthProviders))
+            return 
+        }
         
+        Task { @MainActor in
+            let hasMultipleProviders = providers.count > 1
+            let message = hasMultipleProviders ? "" : "This is a sensitive action. In order to proceed, you must reauthenticate your account."
+            let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
+            
+            if hasMultipleProviders {
+                for provider in providers {
+                    let action = UIAlertAction(title: provider.name, style: .default) { _ in
+                        completion(.success(provider))
+                    }
+                    
+                    alertController.addAction(action)
+                }
+            } else {
+                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+                    completion(.success(providers.first))
+                }
+                
+                alertController.addAction(okAction)
+            }
+            
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                completion(.success(nil))
+            }
+            
+            alertController.addAction(cancelAction)
+            alertController.presentInMainThread()
+        }
     }
 }
 
@@ -99,18 +129,6 @@ private extension CredentialAlertHandler {
             
             alertController.presentInMainThread()
         }
-    }
-}
-
-
-// MARK: - Dependencies
-struct EmailSignUpInfo {
-    let email: String
-    let password: String
-    let confirm: String
-    
-    var passwordsMatch: Bool {
-        return password == confirm
     }
 }
 

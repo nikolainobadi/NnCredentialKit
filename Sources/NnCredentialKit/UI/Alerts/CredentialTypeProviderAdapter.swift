@@ -31,11 +31,7 @@ extension CredentialTypeProviderAdapter: CredentialTypeProvider {
 // MARK: - CredentialReauthenticationProvider
 extension CredentialTypeProviderAdapter: CredentialReauthenticationProvider {
     func loadReauthCredential(linkedProviders: [AuthProvider]) async throws -> CredentialType? {
-        if linkedProviders.isEmpty {
-            fatalError()
-        }
-        
-        guard let selectedProvider = selectProvider(from: linkedProviders) else {
+        guard let selectedProvider = try await selectProvider(from: linkedProviders) else {
             return nil
         }
         
@@ -53,13 +49,23 @@ extension CredentialTypeProviderAdapter: CredentialReauthenticationProvider {
 
 // MARK: - Private Methods
 private extension CredentialTypeProviderAdapter {
-    func selectProvider(from linkedProviders: [AuthProvider]) -> AuthProvider? {
-        // TODO: - 
-        return nil
+    func selectProvider(from linkedProviders: [AuthProvider]) async throws -> AuthProvider? {
+        return try await withCheckedThrowingContinuation { continuation in
+            alertHandler.showReauthenticationAlert(providers: linkedProviders) { result in
+                switch result {
+                case .success(let provider):
+                    continuation.resume(returning: provider)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
     
     func loadAppleCredential() async throws -> CredentialType? {
-        guard let info = try await AppleSignInCoordinator().createAppleTokenInfo(requestedScopes: [.email]) else { return nil }
+        guard let info = try await AppleSignInCoordinator().createAppleTokenInfo(requestedScopes: [.email]) else { 
+            return nil
+        }
         
         // TODO: - may need to change to include displayName
         return .apple(tokenId: info.idTokenString, nonce: info.nonce)
@@ -68,18 +74,27 @@ private extension CredentialTypeProviderAdapter {
     func loadGoogleCredential() async throws -> CredentialType? {
         let rootVC = await alertHandler.getTopVC()
         
-        guard let info = try await GoogleSignInHandler.signIn(rootVC: rootVC) else { return nil }
+        guard let info = try await GoogleSignInHandler.signIn(rootVC: rootVC) else {
+            return nil
+        }
         
         // TODO: - may need to change to include displayName
         return .google(tokenId: info.tokenId, accessToken: info.accessTokenId)
     }
     
     func loadEmailReauthenticationCredential(_ email: String) async -> CredentialType? {
-        return nil
+        guard let password = await alertHandler.loadPassword("Please enter the password for the email: \(email)") else {
+            return nil
+        }
+        
+        return .emailPassword(email: email, password: password)
     }
     
     func loadNewEmailSignUpCredential() async throws -> CredentialType? {
-        guard let info = await alertHandler.loadEmailSignUpInfo() else { return nil }
+        guard let info = await alertHandler.loadEmailSignUpInfo() else {
+            return nil
+        }
+        
         guard info.passwordsMatch else {
             throw CredentialError.passwordsMustMatch
         }
