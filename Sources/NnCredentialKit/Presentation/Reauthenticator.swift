@@ -19,8 +19,7 @@ extension Reauthenticator {
     func start() async throws {
         let linkedProviders = delegate.loadLinkedProviders()
         guard let selectedCredentialType = try await getCredentialInfo(from: linkedProviders) else {
-            // TODO: - throw error
-            fatalError()
+            throw CredentialError.cancelled
         }
         
         try await delegate.reauthenticate(with: selectedCredentialType)
@@ -28,8 +27,7 @@ extension Reauthenticator {
     
     func getCredentialInfo(from providers: [AuthProvider]) async throws -> CredentialType? {
         guard let selectedProvider = await selectProvider(from: providers) else {
-            // TODO: - throw error
-            fatalError()
+            return nil
         }
         
         switch selectedProvider.type {
@@ -57,7 +55,7 @@ extension Reauthenticator {
 
 
 // MARK: - Dependencies
-protocol ReauthenticationDelegate {
+public protocol ReauthenticationDelegate {
     func loadLinkedProviders() -> [AuthProvider]
     func reauthenticate(with credientialType: CredentialType) async throws
 }

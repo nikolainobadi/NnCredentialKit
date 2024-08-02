@@ -45,9 +45,14 @@ enum AccountCredentialResult {
     case success, reauthRequired, failure(Error)
 }
 
-struct AuthProvider: Hashable {
-    let linkedEmail: String
-    let type: AuthProviderType 
+public struct AuthProvider: Hashable {
+    public let linkedEmail: String
+    public let type: AuthProviderType
+    
+    public init(linkedEmail: String, type: AuthProviderType) {
+        self.linkedEmail = linkedEmail
+        self.type = type
+    }
 }
 
 extension AuthProvider {
@@ -56,12 +61,12 @@ extension AuthProvider {
     }
 }
 
-enum AuthProviderType {
+public enum AuthProviderType {
     case apple, google, emailPassword
 }
 
 extension AuthProvider: Identifiable {
-    var id: String {
+    public var id: String {
         return name
     }
     
@@ -77,7 +82,7 @@ extension AuthProvider: Identifiable {
     }
 }
 
-enum CredentialType {
+public enum CredentialType {
     case apple(tokenId: String, nonce: String)
     case google(tokenId: String, accessToken: String)
     case emailPassword(email: String, password: String)

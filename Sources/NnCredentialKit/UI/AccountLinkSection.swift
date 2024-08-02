@@ -8,10 +8,14 @@
 import SwiftUI
 import NnSwiftUIKit
 
-struct AccountLinkSection: View {
+public struct AccountLinkSection: View {
     @StateObject var viewModel: AccountLinkViewModel
     
-    var body: some View {
+    public init(delegate: AccountLinkDelegate) {
+        self._viewModel = .init(wrappedValue: .init(delegate: delegate, credentialProvider: CredentialTypeProviderAdapter()))
+    }
+    
+    public var body: some View {
         Section("Sign-in Methods") {
             ForEach(viewModel.providers) { provider in
                 LinkRow(provider: provider) {
@@ -31,12 +35,17 @@ fileprivate struct LinkRow: View {
     var body: some View {
         HStack {
             VStack {
-                // TODO: - linkItem name
-                // TODO: - optional email
+                Text(provider.name)
+                    .font(.title3)
+//                    .foregroundColor(config.titleColor)
+                
+                Text(provider.linkedEmail)
+//                    .foregroundColor(config.emailColor)
+                    .nnOnlyShow(when: !provider.linkedEmail.isEmpty)
             }
             
             NnAsyncTryButton(action: linkAction) {
-                Text(provider.buttonText)
+                Text(provider.isLinked ? "Unlink" : "Link")
                     .underline()
             }
         }
@@ -45,13 +54,13 @@ fileprivate struct LinkRow: View {
 
 
 // MARK: - Preview
-//#Preview {
-//    AccountLinkSection()
-//}
-
-
-fileprivate extension AuthProvider {
-    var buttonText: String {
-        return isLinked ? "Unlink" : "Link"
+#Preview {
+    class PreviewDelegate: AccountLinkDelegate {
+        func loadLinkedProviders() -> [AuthProvider] { [] }
+        func linkProvider(with: CredentialType) async throws { }
+        func unlinkProvider(_ type: AuthProviderType) async throws { }
+        func reauthenticate(with credientialType: CredentialType) async throws { }
     }
+    
+    return AccountLinkSection(delegate: PreviewDelegate())
 }
