@@ -15,6 +15,7 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(url: "https://github.com/nikolainobadi/NnTestKit", branch: "main"),
         .package(url: "https://github.com/nikolainobadi/NnSwiftUIKit", branch: "main"),
         .package(url: "https://github.com/nikolainobadi/NnAppleKit.git", branch: "main"),
         .package(url: "https://github.com/nikolainobadi/NnGoogleKit.git", branch: "google-ads"), // TODO: - update to proper version number
@@ -33,7 +34,10 @@ let package = Package(
         ),
         .testTarget(
             name: "NnCredentialKitTests",
-            dependencies: ["NnCredentialKit"]
+            dependencies: [
+                "NnCredentialKit",
+                .product(name: "NnTestHelpers", package: "NnTestKit")
+            ]
         ),
     ]
 )

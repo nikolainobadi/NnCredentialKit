@@ -1,0 +1,34 @@
+{
+  "configurations" : [
+    {
+      "id" : "60190FDA-AEAC-4249-A213-EF951178632C",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "NnCredentialKit",
+          "name" : "NnCredentialKit"
+        }
+      ]
+    },
+    "testExecutionOrdering" : "random",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "NnCredentialKitTests",
+        "name" : "NnCredentialKitTests"
+      }
+    }
+  ],
+  "version" : 1
+}

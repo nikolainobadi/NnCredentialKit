@@ -91,6 +91,15 @@
       }
     },
     {
+      "identity" : "nntestkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nikolainobadi/NnTestKit",
+      "state" : {
+        "branch" : "main",
+        "revision" : "13edd95fa90c1a506f1a0ffa664324e743438912"
+      }
+    },
+    {
       "identity" : "promises",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/promises.git",
