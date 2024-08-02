@@ -12,12 +12,12 @@ public struct AccountLinkSection: View {
     @StateObject var viewModel: AccountLinkViewModel
     
     public init(delegate: AccountLinkDelegate) {
-        self._viewModel = .init(wrappedValue: .init(delegate: delegate, credentialProvider: CredentialTypeProviderAdapter()))
+        self._viewModel = .init(wrappedValue: .customInit(delegate))
     }
     
     public var body: some View {
         Section("Sign-in Methods") {
-            ForEach(viewModel.providers) { provider in
+            ForEach(viewModel.providers, id: \.name) { provider in
                 LinkRow(provider: provider) {
                     try await viewModel.linkAction(provider)
                 }
@@ -57,10 +57,18 @@ fileprivate struct LinkRow: View {
 #Preview {
     class PreviewDelegate: AccountLinkDelegate {
         func loadLinkedProviders() -> [AuthProvider] { [] }
-        func linkProvider(with: CredentialType) async throws { }
-        func unlinkProvider(_ type: AuthProviderType) async throws { }
         func reauthenticate(with credientialType: CredentialType) async throws { }
+        func linkProvider(with: CredentialType) async -> AccountCredentialResult { .success }
+        func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult { .success }
     }
     
     return AccountLinkSection(delegate: PreviewDelegate())
+}
+
+
+// MARK: - Extension Dependencies
+fileprivate extension AccountLinkViewModel {
+    static func customInit(_ delegate: AccountLinkDelegate) -> AccountLinkViewModel {
+        return .init(delegate: delegate, reauthenticator: .init(delegate: delegate), credentialProvider: CredentialTypeProviderAdapter())
+    }
 }

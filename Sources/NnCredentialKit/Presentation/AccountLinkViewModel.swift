@@ -11,11 +11,13 @@ final class AccountLinkViewModel: ObservableObject {
     @Published var providers: [AuthProvider]
     
     private let delegate: AccountLinkDelegate
+    private let reauthenticator: Reauthenticator
     private let credentialProvider: CredentialTypeProvider
     
-    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, credentialProvider: CredentialTypeProvider) {
+    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: Reauthenticator, credentialProvider: CredentialTypeProvider) {
         self.delegate = delegate
         self.providers = providers
+        self.reauthenticator = reauthenticator
         self.credentialProvider = credentialProvider
     }
 }
@@ -35,14 +37,14 @@ extension AccountLinkViewModel {
 
 // MARK: - Private Methods
 private extension AccountLinkViewModel {
-    func linkAccount(_ provider: AuthProvider) async throws {
-        guard let credentialType = credentialProvider.loadCredential(provider.type) else {
+    func linkAccount(_ provider: AuthProvider, credentialType: CredentialType? = nil) async throws {
+        guard let credentialType = credentialType ?? credentialProvider.loadCredential(provider.type) else {
             return
         }
         
-        try await delegate.linkProvider(with: credentialType)
-        
-        // TODO: - reload providers
+        try await handleResult(delegate.linkProvider(with: credentialType)) { [unowned self] in
+            try await linkAccount(provider, credentialType: credentialType)
+        }
     }
     
     func unlinkAccount(_ provider: AuthProvider) async throws {
@@ -50,9 +52,20 @@ private extension AccountLinkViewModel {
             throw CredentialError.cannotUnlinkOnlyProvider
         }
         
-        try await delegate.unlinkProvider(provider.type)
-        
-        // TODO: - reload providers
+        try await handleResult(delegate.unlinkProvider(provider.type)) { [unowned self] in
+            try await unlinkAccount(provider)
+        }
+    }
+    
+    func handleResult(_ result: AccountCredentialResult, actionAfterReauth action: @escaping () async throws -> Void) async throws {
+        switch result {
+        case .success:
+            break
+        case .failure(let error):
+            throw error
+        case .reauthRequired:
+            try await reauthenticator.start(actionAfterReauth: action)
+        }
     }
 }
 
@@ -63,6 +76,6 @@ protocol CredentialTypeProvider {
 }
 
 public protocol AccountLinkDelegate: ReauthenticationDelegate {
-    func linkProvider(with: CredentialType) async throws
-    func unlinkProvider(_ type: AuthProviderType) async throws
+    func linkProvider(with: CredentialType) async -> AccountCredentialResult
+    func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult
 }

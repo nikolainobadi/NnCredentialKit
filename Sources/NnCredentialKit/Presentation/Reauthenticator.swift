@@ -16,13 +16,14 @@ final class Reauthenticator {
 
 // MARK: - 
 extension Reauthenticator {
-    func start() async throws {
+    func start(actionAfterReauth: @escaping () async throws -> Void) async throws {
         let linkedProviders = delegate.loadLinkedProviders()
         guard let selectedCredentialType = try await getCredentialInfo(from: linkedProviders) else {
             throw CredentialError.cancelled
         }
         
         try await delegate.reauthenticate(with: selectedCredentialType)
+        try await actionAfterReauth()
     }
     
     func getCredentialInfo(from providers: [AuthProvider]) async throws -> CredentialType? {
