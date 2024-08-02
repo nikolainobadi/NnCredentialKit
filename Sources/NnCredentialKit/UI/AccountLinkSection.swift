@@ -19,7 +19,6 @@ struct AccountLinkSection: View {
                 }
             }
         }
-        .withReauthentication(shouldReauthenticate: $viewModel.shouldReauthenticate)
     }
 }
 

@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "NnCredentialKit",
     platforms: [
-        .macOS(.v14)
+        .iOS(.v17), .macOS(.v14)
     ],
     products: [
         .library(
