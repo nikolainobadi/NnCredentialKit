@@ -15,6 +15,14 @@ final class ReauthenticatorTests: XCTestCase {
         
         XCTAssertNil(delegate.credentialType)
     }
+    
+    func test_error_is_thrown_when_no_linked_providers_exist() async {
+        let sut = makeSUT().sut
+        
+        await asyncAssertThrownError(expectedError: CredentialError.emptyAuthProviders) {
+            try await sut.start(actionAfterReauth: { })
+        }
+    }
 }
 
 
