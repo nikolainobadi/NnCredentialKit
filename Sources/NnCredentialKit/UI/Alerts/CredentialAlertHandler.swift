@@ -35,15 +35,19 @@ extension CredentialAlertHandler {
             }
         }
     }
+    
+    func showReauthenticationAlert() async throws {
+        
+    }
 }
 
 
 // MARK: - Private Methods
 private extension CredentialAlertHandler {
     func showPasswordAlert(_ message: String, completion: @escaping (String?) -> Void) {
-        let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
-        
         Task { @MainActor in
+            let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
+            
             alertController.addTextField { textField in
                 textField.configureForPassword(isConfirm: false)
             }
@@ -66,9 +70,9 @@ private extension CredentialAlertHandler {
     }
     
     func showEmailPasswordAlert(_ message: String, completion: @escaping (EmailSignUpInfo?) -> Void) {
-        let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        
         Task { @MainActor in
+            let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+            
             alertController.addTextField { textField in
                 textField.configureForEmail()
             }
