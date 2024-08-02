@@ -38,12 +38,16 @@ extension AccountLinkViewModel {
 // MARK: - Private Methods
 private extension AccountLinkViewModel {
     func linkAccount(_ provider: AuthProvider, credentialType: CredentialType? = nil) async throws {
-        guard let credentialType = credentialType ?? credentialProvider.loadCredential(provider.type) else {
+        guard let credentialType = try await credentialProvider.loadCredential(provider.type) else {
             return
         }
         
+        try await linkAccountToCredential(credentialType)
+    }
+    
+    func linkAccountToCredential(_ credentialType: CredentialType) async throws {
         try await handleResult(delegate.linkProvider(with: credentialType)) { [unowned self] in
-            try await linkAccount(provider, credentialType: credentialType)
+            try await linkAccountToCredential(credentialType)
         }
     }
     
@@ -72,7 +76,7 @@ private extension AccountLinkViewModel {
 
 // MARK: - Dependencies
 protocol CredentialTypeProvider {
-    func loadCredential(_ type: AuthProviderType) -> CredentialType?
+    func loadCredential(_ type: AuthProviderType) async throws -> CredentialType?
 }
 
 public protocol AccountLinkDelegate: ReauthenticationDelegate {
