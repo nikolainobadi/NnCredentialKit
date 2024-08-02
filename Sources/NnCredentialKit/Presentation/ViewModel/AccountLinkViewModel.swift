@@ -11,10 +11,10 @@ final class AccountLinkViewModel: ObservableObject {
     @Published var providers: [AuthProvider]
     
     private let delegate: AccountLinkDelegate
-    private let reauthenticator: Reauthenticator
+    private let reauthenticator: ReauthenticationAdapter
     private let credentialProvider: CredentialTypeProvider
     
-    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: Reauthenticator, credentialProvider: CredentialTypeProvider) {
+    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: ReauthenticationAdapter, credentialProvider: CredentialTypeProvider) {
         self.delegate = delegate
         self.providers = providers
         self.reauthenticator = reauthenticator
@@ -71,15 +71,4 @@ private extension AccountLinkViewModel {
             try await reauthenticator.start(actionAfterReauth: action)
         }
     }
-}
-
-
-// MARK: - Dependencies
-protocol CredentialTypeProvider {
-    func loadCredential(_ type: AuthProviderType) async throws -> CredentialType?
-}
-
-public protocol AccountLinkDelegate: ReauthenticationDelegate {
-    func linkProvider(with: CredentialType) async -> AccountCredentialResult
-    func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult
 }

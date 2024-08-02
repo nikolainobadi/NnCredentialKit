@@ -21,7 +21,10 @@ public final class AccountDeleter {
 // MARK: - Init
 public extension AccountDeleter {
     convenience init(delegate: DeleteAccountDelegate) {
-        self.init(delegate: delegate, reauthenticator: .init(delegate: delegate, credentialProvider: CredentialTypeProviderAdapter()))
+        let credentialProvider = CredentialTypeProviderAdapter()
+        let reauthenticator = ReauthenticationAdapter(delegate: delegate, credentialProvider: credentialProvider)
+        
+        self.init(delegate: delegate, reauthenticator:  reauthenticator)
     }
 }
 
@@ -42,10 +45,4 @@ public extension AccountDeleter {
             }
         }
     }
-}
-
-
-// MARK: - Dependencies
-public protocol DeleteAccountDelegate: ReauthenticationDelegate {
-    func deleteAccount() async -> AccountCredentialResult
 }

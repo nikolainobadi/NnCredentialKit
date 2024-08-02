@@ -70,7 +70,7 @@ fileprivate struct LinkRow: View {
 fileprivate extension AccountLinkViewModel {
     static func customInit(_ delegate: AccountLinkDelegate) -> AccountLinkViewModel {
         let credentialProvider = CredentialTypeProviderAdapter()
-        let reauthenticator = Reauthenticator(delegate: delegate, credentialProvider: credentialProvider)
+        let reauthenticator = ReauthenticationAdapter(delegate: delegate, credentialProvider: credentialProvider)
         
         return .init(delegate: delegate, reauthenticator: reauthenticator, credentialProvider: credentialProvider)
     }

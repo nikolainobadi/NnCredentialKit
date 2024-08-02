@@ -1,11 +1,11 @@
 //
-//  Reauthenticator.swift
+//  ReauthenticationAdapter.swift
 //
 //
 //  Created by Nikolai Nobadi on 8/2/24.
 //
 
-final class Reauthenticator {
+final class ReauthenticationAdapter {
     private let delegate: ReauthenticationDelegate
     private let credentialProvider: CredentialReauthenticationProvider
     
@@ -16,8 +16,8 @@ final class Reauthenticator {
 }
 
 
-// MARK: - 
-extension Reauthenticator {
+// MARK: -  Reauthenticator
+extension ReauthenticationAdapter: Reauthenticator {
     func start(actionAfterReauth: @escaping () async throws -> Void) async throws {
         let linkedProviders = delegate.loadLinkedProviders()
         
@@ -32,15 +32,4 @@ extension Reauthenticator {
         try await delegate.reauthenticate(with: selectedCredentialType)
         try await actionAfterReauth()
     }
-}
-
-
-// MARK: - Dependencies
-protocol CredentialReauthenticationProvider {
-    func loadReauthCredential(linkedProviders: [AuthProvider]) async throws -> CredentialType?
-}
-
-public protocol ReauthenticationDelegate {
-    func loadLinkedProviders() -> [AuthProvider]
-    func reauthenticate(with credientialType: CredentialType) async throws
 }
