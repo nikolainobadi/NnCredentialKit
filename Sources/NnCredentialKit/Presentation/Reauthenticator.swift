@@ -32,7 +32,7 @@ extension Reauthenticator {
             fatalError()
         }
         
-        switch selectedProvider.providerType {
+        switch selectedProvider.type {
         case .apple:
             // TODO: -
             return nil

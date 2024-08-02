@@ -8,6 +8,9 @@
 import Foundation
 
 final class AccountLinkViewModel: ObservableObject {
+    @Published var email = ""
+    @Published var password = ""
+    @Published var confirm = ""
     @Published var providers: [AuthProvider]
     @Published var showingEmailSignUpAlert: Bool
     
@@ -30,21 +33,40 @@ extension AccountLinkViewModel {
             try await linkAccount(provider)
         }
     }
+    
+    func performEmailPasswordAccountLink() async throws {
+        try validateEmailPasswordInfo()
+        try await delegate.linkProvider(with: .emailPassword(email: email, password: password))
+    }
 }
 
 
 // MARK: - Private Methods
 private extension AccountLinkViewModel {
     func linkAccount(_ provider: AuthProvider) async throws {
-        if provider.isLinked {
+        switch provider.type {
+        case .apple:
+            // TODO: -
+            try await delegate.linkProvider(with: .apple(tokenId: "", nonce: ""))
+        case .google:
+            // TODO: -
+            try await delegate.linkProvider(with: .google(tokenId: "", accessToken: ""))
+        case .emailPassword:
             await showEmailAlert()
-        } else {
-            // TODO: - perform accountLink
         }
     }
     
     func unlinkAccount(_ provider: AuthProvider) async throws {
-        // TODO: - perform unlink
+        guard providers.filter({ $0.isLinked }).count > 1 else {
+            // TODO: - throw cannotUnlinkOnlyProvider error
+            fatalError()
+        }
+        
+        try await delegate.unlinkProvider(provider.type)
+    }
+    
+    func validateEmailPasswordInfo() throws {
+        // TODO: -
     }
 }
 
@@ -63,5 +85,3 @@ protocol AccountLinkDelegate: ReauthenticationDelegate {
     func linkProvider(with: CredentialType) async throws
     func unlinkProvider(_ type: AuthProviderType) async throws
 }
-
-

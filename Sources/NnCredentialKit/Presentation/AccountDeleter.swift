@@ -47,7 +47,7 @@ enum AccountCredentialResult {
 
 struct AuthProvider: Hashable {
     let linkedEmail: String
-    let providerType: AuthProviderType 
+    let type: AuthProviderType 
 }
 
 extension AuthProvider {
@@ -66,7 +66,7 @@ extension AuthProvider: Identifiable {
     }
     
     var name: String {
-        switch providerType {
+        switch type {
         case .apple:
             return "Apple ID"
         case .google:
