@@ -13,6 +13,10 @@ extension XCTestCase {
         return .emailPassword(email: email, password: password)
     }
     
+    func makeAuthProvider(_ type: AuthProviderType, email: String = "") -> AuthProvider {
+        return .init(linkedEmail: email, type: type)
+    }
+    
     func makeLinkedProviders(types: [AuthProviderType] = AuthProviderType.allCases) -> [AuthProvider] {
         return types.map { type in
                 return .init(linkedEmail: "tester@\(type.rawValue).com", type: type)

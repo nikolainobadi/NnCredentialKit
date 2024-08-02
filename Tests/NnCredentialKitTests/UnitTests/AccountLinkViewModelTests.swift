@@ -20,13 +20,110 @@ final class AccountLinkViewModelTests: XCTestCase {
 }
 
 
+// MARK: - LinkAccount
+extension AccountLinkViewModelTests {
+    func test_links_account_when_provider_is_not_linked() async {
+        let provider = makeAuthProvider(.emailPassword)
+        let credential = makeEmailPasswordCredential()
+        let (sut, delegate) = makeSUT(credentialType: credential)
+        
+        await asyncAssertNoErrorThrown {
+            try await sut.linkAction(provider)
+        }
+        
+        XCTAssertNil(delegate.providerType)
+        
+        assertProperty(delegate.credentialType) { credentialType in
+            switch credentialType {
+            case .emailPassword:
+                XCTAssert(true)
+            default:
+                XCTFail("unexpected credential type")
+            }
+        }
+    }
+    
+    func test_rethrows_error_thrown_by_credential_provider() async {
+        let provider = makeAuthProvider(.emailPassword)
+        let (sut, delegate) = makeSUT(throwProviderError: true)
+        
+        await asyncAssertThrownError(expectedError: TestError.credentialTypeProvider) {
+            try await sut.linkAction(provider)
+        }
+        
+        XCTAssertNil(delegate.providerType)
+        XCTAssertNil(delegate.credentialType)
+    }
+    
+    func test_does_not_link_account_if_provider_returns_nil_credentials() async {
+        let provider = makeAuthProvider(.emailPassword)
+        let (sut, delegate) = makeSUT()
+        
+        await asyncAssertNoErrorThrown {
+            try await sut.linkAction(provider)
+        }
+        
+        XCTAssertNil(delegate.providerType)
+        XCTAssertNil(delegate.credentialType)
+    }
+
+    func test_throws_error_when_reauthorization_fails() async {
+        let error = TestError.reauth
+        let provider = makeAuthProvider(.emailPassword)
+        let credential = makeEmailPasswordCredential()
+        let (sut, _) = makeSUT(credentialType: credential, firstResult: .failure(error))
+        
+        await asyncAssertThrownError(expectedError: error) {
+            try await sut.linkAction(provider)
+        }
+    }
+    
+    func test_attempts_account_link_again_after_successful_reauthorization() async {
+        let error = TestError.postReauthorizationAction
+        let provider = makeAuthProvider(.emailPassword)
+        let credential = makeEmailPasswordCredential()
+        let (sut, _) = makeSUT(credentialType: credential, firstResult: .reauthRequired, secondResult: .failure(error))
+        
+        await asyncAssertThrownError(expectedError: error) {
+            try await sut.linkAction(provider)
+        }
+    }
+}
+
+
+// MARK: - UnlinkAccount
+extension AccountLinkViewModelTests {
+    func test_unlinks_account_when_provider_is_linked() async {
+        let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
+        let secondProvider = makeAuthProvider(.apple, email: "tester@apple.com")
+        let (sut, delegate) = makeSUT(providers: [provider, secondProvider])
+        
+        await asyncAssertNoErrorThrown {
+            try await sut.linkAction(provider)
+        }
+        
+        assertPropertyEquality(delegate.providerType, expectedProperty: provider.type)
+    }
+    
+    func test_throws_error_when_attempting_to_unlink_with_only_one_existing_provider() async {
+        
+        let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
+        let (sut, delegate) = makeSUT(providers: [provider])
+        
+        await asyncAssertThrownError(expectedError: CredentialError.cannotUnlinkOnlyProvider) {
+            try await sut.linkAction(provider)
+        }
+    }
+}
+
+
 // MARK: - SUT
 extension AccountLinkViewModelTests {
-    func makeSUT(credentialType: CredentialType? = nil, firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwProviderError: Bool = false, throwReauthError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> (sut: AccountLinkViewModel, delegate: MockDelegate) {
+    func makeSUT(providers: [AuthProvider] = [], credentialType: CredentialType? = nil, firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwProviderError: Bool = false, throwReauthError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> (sut: AccountLinkViewModel, delegate: MockDelegate) {
         let delegate = MockDelegate(firstResult: firstResult, secondResult: secondResult)
         let auth = MockReauthenticator(throwError: throwReauthError)
         let provider = StubProvider(credentialType: credentialType, throwError: throwProviderError)
-        let sut = AccountLinkViewModel(delegate: delegate, reauthenticator: auth, credentialProvider: provider)
+        let sut = AccountLinkViewModel(providers: providers, delegate: delegate, reauthenticator: auth, credentialProvider: provider)
         
         trackForMemoryLeaks(sut, file: file, line: line)
         

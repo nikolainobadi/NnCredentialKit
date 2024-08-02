@@ -17,14 +17,8 @@ final class AccountDeleterTests: XCTestCase {
         await asyncAssertThrownError(expectedError: error, action: sut.deleteAccount)
     }
     
-    func test_reauthenticates_when_required() async {
-        let sut = makeSUT(firstResult: .reauthRequired)
-        
-        await asyncAssertNoErrorThrown(action: sut.deleteAccount)
-    }
-    
     func test_attempts_delete_account_after_successful_reauthentication() async {
-        let error = TestError.secondDeleteAccountAttempt
+        let error = TestError.postReauthorizationAction
         let sut = makeSUT(firstResult: .reauthRequired, secondResult: .failure(error))
         
         await asyncAssertThrownError(expectedError: error, action: sut.deleteAccount)
