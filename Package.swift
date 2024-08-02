@@ -11,16 +11,21 @@ let package = Package(
     products: [
         .library(
             name: "NnCredentialKit",
-            targets: ["NnCredentialKit"]),
+            targets: ["NnCredentialKit"]
+        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/nikolainobadi/NnSwiftUIKit", branch: "main")
+        .package(url: "https://github.com/nikolainobadi/NnSwiftUIKit", branch: "main"),
+        .package(url: "https://github.com/nikolainobadi/NnAppleKit.git", branch: "main"),
+        .package(url: "https://github.com/nikolainobadi/NnGoogleKit.git", branch: "google-ads"), // TODO: - update to proper version number
     ],
     targets: [
         .target(
             name: "NnCredentialKit",
             dependencies: [
-                "NnSwiftUIKit"
+                "NnSwiftUIKit",
+                .product(name: "NnAppleSignIn", package: "NnAppleKit"),
+                .product(name: "NnGoogleSignIn", package: "NnGoogleKit")
             ],
             resources: [
                 .process("Resources/Media.xcassets")

@@ -7,7 +7,9 @@
 
 import Foundation
 
-final class CredentialTypeProviderAdapter { }
+final class CredentialTypeProviderAdapter {
+    private let alertHandler = CredentialAlertHandler()
+}
 
 extension CredentialTypeProviderAdapter: CredentialTypeProvider {
     func loadCredential(_ type: AuthProviderType) -> CredentialType? {
@@ -16,7 +18,12 @@ extension CredentialTypeProviderAdapter: CredentialTypeProvider {
 }
 
 extension CredentialTypeProviderAdapter: CredentialReauthenticationProvider {
-    func loadReauthCredential(for type: AuthProviderType) async throws -> CredentialType? {
+    func loadReauthCredential(linkedProviders: [AuthProvider]) async throws -> CredentialType? {
         return nil
     }
+}
+
+// MARK: - Dependencies
+final class CredentialAlertHandler {
+    
 }
