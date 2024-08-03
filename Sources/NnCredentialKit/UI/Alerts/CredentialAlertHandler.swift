@@ -7,6 +7,7 @@
 
 import UIKit
 import NnSwiftUIKit
+import NnCredentialKitAccessibility
 
 final class CredentialAlertHandler {
     @MainActor
@@ -136,7 +137,7 @@ fileprivate extension UITextField {
         keyboardType = .emailAddress
         autocorrectionType = .no
         autocapitalizationType = .none
-        // TODO: - add accessibilityId
+        accessibilityIdentifier = SignUpAlertAccessibilityId.emailField.rawValue
     }
 
     func configureForPassword(isConfirm: Bool) {
@@ -144,7 +145,12 @@ fileprivate extension UITextField {
         isSecureTextEntry = true
         autocorrectionType = .no
         autocapitalizationType = .none
-        // TODO: - add accessibilityId
+        
+        if isConfirm {
+            accessibilityIdentifier = SignUpAlertAccessibilityId.passwordField.rawValue
+        } else {
+            accessibilityIdentifier = SignUpAlertAccessibilityId.confirmField.rawValue
+        }
     }
 }
 

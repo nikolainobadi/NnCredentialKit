@@ -13,6 +13,10 @@ let package = Package(
             name: "NnCredentialKit",
             targets: ["NnCredentialKit"]
         ),
+        .library(
+            name: "NnCredentialKitAccessibility",
+            targets: ["NnCredentialKitAccessibility"]
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/nikolainobadi/NnTestKit", branch: "main"),
@@ -24,11 +28,15 @@ let package = Package(
             name: "NnCredentialKit",
             dependencies: [
                 "NnSwiftUIKit",
+                "NnCredentialKitAccessibility",
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS")
             ],
             resources: [
                 .process("Resources/Media.xcassets")
             ]
+        ),
+        .target(
+            name: "NnCredentialKitAccessibility"
         ),
         .testTarget(
             name: "NnCredentialKitTests",
