@@ -1,23 +1,30 @@
 //
-//  CredentialTypeProviderAdapter.swift
+//  CredentialManager.swift
 //
 //
 //  Created by Nikolai Nobadi on 8/2/24.
 //
 
-final class CredentialTypeProviderAdapter {
+import AuthenticationServices
+
+final class CredentialManager {
     private let alertHandler = CredentialAlertHandler()
+    private let socialCredentialProvider: SocialCredentialProvider
+    
+    init(socialCredentialProvider: SocialCredentialProvider) {
+        self.socialCredentialProvider = socialCredentialProvider
+    }
 }
 
 
 // MARK: - CredentialTypeProvider
-extension CredentialTypeProviderAdapter: CredentialTypeProvider {
+extension CredentialManager: CredentialTypeProvider {
     func loadCredential(_ type: AuthProviderType) async throws -> CredentialType? {
         switch type {
         case .apple:
-            return try await loadAppleCredential()
+            return try await .init(appleCredential: loadAppleCredential())
         case .google:
-            return try await loadGoogleCredential()
+            return try await .init(googleCredential: loadGoogleCredential())
         case .emailPassword:
             return try await loadNewEmailSignUpCredential()
         }
@@ -26,7 +33,7 @@ extension CredentialTypeProviderAdapter: CredentialTypeProvider {
 
 
 // MARK: - CredentialReauthenticationProvider
-extension CredentialTypeProviderAdapter: CredentialReauthenticationProvider {
+extension CredentialManager: CredentialReauthenticationProvider {
     func loadReauthCredential(linkedProviders: [AuthProvider]) async throws -> CredentialType? {
         guard let selectedProvider = try await selectProvider(from: linkedProviders) else {
             return nil
@@ -34,9 +41,9 @@ extension CredentialTypeProviderAdapter: CredentialReauthenticationProvider {
         
         switch selectedProvider.type {
         case .apple:
-            return try await loadAppleCredential()
+            return try await .init(appleCredential: loadAppleCredential())
         case .google:
-            return try await loadGoogleCredential()
+            return try await .init(googleCredential: loadGoogleCredential())
         case .emailPassword:
             return await loadEmailReauthenticationCredential(selectedProvider.linkedEmail)
         }
@@ -44,8 +51,20 @@ extension CredentialTypeProviderAdapter: CredentialReauthenticationProvider {
 }
 
 
+// MARK: - SocialCredentialProvider
+extension CredentialManager {
+    func loadAppleCredential() async throws -> AppleCredentialInfo? {
+        try await socialCredentialProvider.loadAppleCredential()
+    }
+    
+    func loadGoogleCredential() async throws -> GoogleCredentialInfo? {
+        try await socialCredentialProvider.loadGoogleCredential()
+    }
+}
+
+
 // MARK: - Private Methods
-private extension CredentialTypeProviderAdapter {
+private extension CredentialManager {
     func selectProvider(from linkedProviders: [AuthProvider]) async throws -> AuthProvider? {
         return try await withCheckedThrowingContinuation { continuation in
             alertHandler.showReauthenticationAlert(providers: linkedProviders) { result in
@@ -57,24 +76,6 @@ private extension CredentialTypeProviderAdapter {
                 }
             }
         }
-    }
-    
-    func loadAppleCredential() async throws -> CredentialType? {
-        guard let info = try await AppleSignInCoordinator().createAppleTokenInfo(requestedScopes: [.email]) else {
-            return nil
-        }
-        
-        return .apple(info)
-    }
-    
-    func loadGoogleCredential() async throws -> CredentialType? {
-        let rootVC = await alertHandler.getTopVC()
-        
-        guard let info = try await GoogleSignInHandler.signIn(rootVC: rootVC) else {
-            return nil
-        }
-        
-        return .google(info)
     }
     
     func loadEmailReauthenticationCredential(_ email: String) async -> CredentialType? {
@@ -96,4 +97,11 @@ private extension CredentialTypeProviderAdapter {
         
         return .emailPassword(email: info.email, password: info.password)
     }
+}
+
+
+// MARK: - Dependencies
+protocol SocialCredentialProvider {
+    func loadAppleCredential() async throws -> AppleCredentialInfo?
+    func loadGoogleCredential() async throws -> GoogleCredentialInfo?
 }

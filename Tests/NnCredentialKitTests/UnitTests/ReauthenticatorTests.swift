@@ -81,10 +81,10 @@ final class ReauthenticatorTests: XCTestCase {
 
 // MARK: - SUT
 extension ReauthenticatorTests {
-    func makeSUT(linkedProviders: [AuthProvider] = [], credentialType: CredentialType? = nil, throwDelegateError: Bool = false, throwProviderError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> (sut: ReauthenticationAdapter, delegate: MockDelegate) {
+    func makeSUT(linkedProviders: [AuthProvider] = [], credentialType: CredentialType? = nil, throwDelegateError: Bool = false, throwProviderError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> (sut: ReauthenticationManager, delegate: MockDelegate) {
         let delegate = MockDelegate(throwError: throwDelegateError, linkedProviders: linkedProviders)
         let provider = StubProvider(throwError: throwProviderError, credentialType: credentialType)
-        let sut = ReauthenticationAdapter(delegate: delegate, credentialProvider: provider)
+        let sut = ReauthenticationManager(delegate: delegate, credentialProvider: provider)
         
         trackForMemoryLeaks(sut, file: file, line: line)
         

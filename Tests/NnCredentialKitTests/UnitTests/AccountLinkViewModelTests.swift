@@ -7,6 +7,7 @@
 
 import XCTest
 import NnTestHelpers
+import AuthenticationServices
 @testable import NnCredentialKit
 
 final class AccountLinkViewModelTests: XCTestCase {
@@ -154,6 +155,8 @@ extension AccountLinkViewModelTests {
         private let store: StubResultStore
         private(set) var credentialType: CredentialType?
         private(set) var providerType: AuthProviderType?
+        
+        var appleSignInScopes: [ASAuthorization.Scope] { [] }
         
         init(firstResult: AccountCredentialResult, secondResult: AccountCredentialResult) {
             self.store = .init(firstResult: firstResult, secondResult: secondResult)

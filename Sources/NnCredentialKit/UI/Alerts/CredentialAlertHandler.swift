@@ -35,7 +35,6 @@ extension CredentialAlertHandler {
     }
     
     func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (Result<AuthProvider?, CredentialError>) -> Void) {
-        
         Task { @MainActor in
             /// providers should NOT be empty as it should be checked before passing into this method
             let hasMultipleProviders = providers.count > 1

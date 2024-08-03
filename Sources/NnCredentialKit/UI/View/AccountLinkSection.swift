@@ -7,6 +7,7 @@
 
 import SwiftUI
 import NnSwiftUIKit
+import AuthenticationServices
 
 public struct AccountLinkSection: View {
     @StateObject var viewModel: AccountLinkViewModel
@@ -56,6 +57,8 @@ fileprivate struct LinkRow: View {
 // MARK: - Preview
 #Preview {
     class PreviewDelegate: AccountLinkDelegate {
+        var appleSignInScopes: [ASAuthorization.Scope] { [] }
+        
         func loadLinkedProviders() -> [AuthProvider] { [] }
         func reauthenticate(with credientialType: CredentialType) async throws { }
         func linkProvider(with: CredentialType) async -> AccountCredentialResult { .success }
@@ -69,8 +72,9 @@ fileprivate struct LinkRow: View {
 // MARK: - Extension Dependencies
 fileprivate extension AccountLinkViewModel {
     static func customInit(_ delegate: AccountLinkDelegate) -> AccountLinkViewModel {
-        let credentialProvider = CredentialTypeProviderAdapter()
-        let reauthenticator = ReauthenticationAdapter(delegate: delegate, credentialProvider: credentialProvider)
+        let socialProvider = SocialCredentialManager(appleSignInScopes: delegate.appleSignInScopes)
+        let credentialProvider = CredentialManager(socialCredentialProvider: socialProvider)
+        let reauthenticator = ReauthenticationManager(delegate: delegate, credentialProvider: credentialProvider)
         
         return .init(delegate: delegate, reauthenticator: reauthenticator, credentialProvider: credentialProvider)
     }
