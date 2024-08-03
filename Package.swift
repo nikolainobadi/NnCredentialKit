@@ -17,7 +17,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/nikolainobadi/NnTestKit", branch: "main"),
         .package(url: "https://github.com/nikolainobadi/NnSwiftUIKit", branch: "main"),
-        .package(url: "https://github.com/nikolainobadi/NnAppleKit.git", branch: "main"),
         .package(url: "https://github.com/nikolainobadi/NnGoogleKit.git", branch: "google-ads"), // TODO: - update to proper version number
     ],
     targets: [
@@ -25,7 +24,6 @@ let package = Package(
             name: "NnCredentialKit",
             dependencies: [
                 "NnSwiftUIKit",
-                .product(name: "NnAppleSignIn", package: "NnAppleKit"),
                 .product(name: "NnGoogleSignIn", package: "NnGoogleKit")
             ],
             resources: [

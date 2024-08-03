@@ -5,7 +5,6 @@
 //  Created by Nikolai Nobadi on 8/2/24.
 //
 
-import NnAppleSignIn
 import NnGoogleSignIn
 
 final class CredentialTypeProviderAdapter {
@@ -63,12 +62,11 @@ private extension CredentialTypeProviderAdapter {
     }
     
     func loadAppleCredential() async throws -> CredentialType? {
-        guard let info = try await AppleSignInCoordinator().createAppleTokenInfo(requestedScopes: [.email]) else { 
+        guard let info = try await AppleSignInCoordinator().createAppleTokenInfo(requestedScopes: [.email]) else {
             return nil
         }
         
-        // TODO: - may need to change to include displayName
-        return .apple(tokenId: info.idTokenString, nonce: info.nonce)
+        return .apple(info)
     }
     
     func loadGoogleCredential() async throws -> CredentialType? {
@@ -78,8 +76,7 @@ private extension CredentialTypeProviderAdapter {
             return nil
         }
         
-        // TODO: - may need to change to include displayName
-        return .google(tokenId: info.tokenId, accessToken: info.accessTokenId)
+        return .google(info)
     }
     
     func loadEmailReauthenticationCredential(_ email: String) async -> CredentialType? {

@@ -64,15 +64,6 @@
       }
     },
     {
-      "identity" : "nnapplekit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nikolainobadi/NnAppleKit.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "1885b5df14f0359b9b8f39f557c0d6df25f0b0d3"
-      }
-    },
-    {
       "identity" : "nngooglekit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nikolainobadi/NnGoogleKit.git",

@@ -108,7 +108,7 @@ extension AccountLinkViewModelTests {
     func test_throws_error_when_attempting_to_unlink_with_only_one_existing_provider() async {
         
         let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
-        let (sut, delegate) = makeSUT(providers: [provider])
+        let (sut, _) = makeSUT(providers: [provider])
         
         await asyncAssertThrownError(expectedError: CredentialError.cannotUnlinkOnlyProvider) {
             try await sut.linkAction(provider)
