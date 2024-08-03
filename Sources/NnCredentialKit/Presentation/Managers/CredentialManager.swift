@@ -5,8 +5,6 @@
 //  Created by Nikolai Nobadi on 8/2/24.
 //
 
-import AuthenticationServices
-
 final class CredentialManager {
     private let alertHandler: CredentialAlerts
     private let socialCredentialProvider: SocialCredentialProvider
@@ -14,17 +12,6 @@ final class CredentialManager {
     init(alertHandler: CredentialAlerts, socialCredentialProvider: SocialCredentialProvider) {
         self.alertHandler = alertHandler
         self.socialCredentialProvider = socialCredentialProvider
-    }
-}
-
-
-// MARK: - ConvenienceInit
-extension CredentialManager {
-    convenience init(appleSignInScopes: [ASAuthorization.Scope]) {
-        let alertHandler = CredentialAlertHandler()
-        let socialProvider = SocialCredentialManager(appleSignInScopes: appleSignInScopes)
-        
-        self.init(alertHandler: alertHandler, socialCredentialProvider: socialProvider)
     }
 }
 
