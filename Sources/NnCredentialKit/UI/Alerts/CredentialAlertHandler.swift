@@ -144,7 +144,7 @@ fileprivate extension UITextField {
         placeholder = "\(isConfirm ? "Confirm " : "")Password"
         isSecureTextEntry = true
         autocorrectionType = .no
-        textContentType = isConfirm ? .name : .username /// prevents autofil strong password bs
+        textContentType = isConfirm ? .familyName : .username /// prevents autofil strong password bs
         autocapitalizationType = .none
         accessibilityIdentifier = accessId.rawValue
     }
