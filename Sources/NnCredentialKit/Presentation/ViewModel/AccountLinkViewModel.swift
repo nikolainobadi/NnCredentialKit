@@ -25,12 +25,18 @@ public final class AccountLinkViewModel: ObservableObject {
 
 // MARK: - Actions
 public extension AccountLinkViewModel {
+    @MainActor func loadProviders() {
+        providers = delegate.loadSupportedProviders()
+    }
+    
     func linkAction(_ provider: AuthProvider) async throws {
         if provider.isLinked {
             try await unlinkAccount(provider)
         } else {
             try await linkAccount(provider)
         }
+        
+        await loadProviders()
     }
 }
 

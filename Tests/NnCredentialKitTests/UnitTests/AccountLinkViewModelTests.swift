@@ -120,7 +120,7 @@ extension AccountLinkViewModelTests {
 // MARK: - SUT
 extension AccountLinkViewModelTests {
     func makeSUT(providers: [AuthProvider] = [], credentialType: CredentialType? = nil, firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwProviderError: Bool = false, throwReauthError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> (sut: AccountLinkViewModel, delegate: MockDelegate) {
-        let delegate = MockDelegate(firstResult: firstResult, secondResult: secondResult)
+        let delegate = MockDelegate(firstResult: firstResult, secondResult: secondResult, supportedProviders: providers)
         let auth = MockReauthenticator(throwError: throwReauthError)
         let provider = StubProvider(credentialType: credentialType, throwError: throwProviderError)
         let sut = AccountLinkViewModel(providers: providers, delegate: delegate, reauthenticator: auth, credentialProvider: provider)
@@ -152,11 +152,17 @@ extension AccountLinkViewModelTests {
     
     class MockDelegate: AccountLinkDelegate {
         private let store: StubResultStore
+        private let supportedProviders: [AuthProvider]
         private(set) var credentialType: CredentialType?
         private(set) var providerType: AuthProviderType?
         
-        init(firstResult: AccountCredentialResult, secondResult: AccountCredentialResult) {
+        init(firstResult: AccountCredentialResult, secondResult: AccountCredentialResult, supportedProviders: [AuthProvider]) {
+            self.supportedProviders = supportedProviders
             self.store = .init(firstResult: firstResult, secondResult: secondResult)
+        }
+        
+        func loadSupportedProviders() -> [AuthProvider] {
+            return supportedProviders
         }
         
         func linkProvider(with type: CredentialType) async -> AccountCredentialResult {

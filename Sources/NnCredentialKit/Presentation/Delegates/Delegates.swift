@@ -16,6 +16,7 @@ public protocol ReauthenticationDelegate {
 }
 
 public protocol AccountLinkDelegate: ReauthenticationDelegate {
+    func loadSupportedProviders() -> [AuthProvider]
     func linkProvider(with type: CredentialType) async -> AccountCredentialResult
     func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult
 }

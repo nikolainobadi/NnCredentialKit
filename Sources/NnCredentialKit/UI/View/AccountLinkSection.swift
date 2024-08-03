@@ -41,6 +41,9 @@ public struct AccountLinkSection: View {
                 }
             }
         }
+        .onAppear {
+            viewModel.loadProviders()
+        }
     }
 }
 
@@ -49,6 +52,7 @@ public struct AccountLinkSection: View {
 #Preview {
     class PreviewDelegate: AccountLinkDelegate {
         func loadLinkedProviders() -> [AuthProvider] { [] }
+        func loadSupportedProviders() -> [AuthProvider] { [] }
         func reauthenticate(with credientialType: CredentialType) async throws { }
         func linkProvider(with: CredentialType) async -> AccountCredentialResult { .success }
         func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult { .success }
