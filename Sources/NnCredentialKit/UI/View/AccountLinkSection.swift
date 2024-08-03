@@ -23,7 +23,7 @@ public struct AccountLinkSection: View {
         Section("Sign-in Methods") {
             ForEach(viewModel.providers, id: \.name) { provider in
                 HStack {
-                    VStack {
+                    VStack(alignment: .leading) {
                         Text(provider.name)
                             .font(.title3)
                             .foregroundStyle(config.providerNameColor)
@@ -32,6 +32,8 @@ public struct AccountLinkSection: View {
                             .foregroundStyle(config.emailColor)
                             .nnOnlyShow(when: !provider.linkedEmail.isEmpty)
                     }
+                    
+                    Spacer()
                     
                     NnAsyncTryButton(action: { try await viewModel.linkAction(provider) }) {
                         Text(provider.isLinked ? "Unlink" : "Link")
