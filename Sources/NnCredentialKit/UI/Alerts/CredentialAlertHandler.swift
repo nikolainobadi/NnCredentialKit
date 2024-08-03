@@ -34,7 +34,7 @@ extension CredentialAlertHandler: CredentialAlerts {
         }
     }
     
-    func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (Result<AuthProvider?, CredentialError>) -> Void) {
+    func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (AuthProvider?) -> Void) {
         Task { @MainActor in
             /// providers should NOT be empty as it should be checked before passing into this method
             let hasMultipleProviders = providers.count > 1
@@ -44,21 +44,21 @@ extension CredentialAlertHandler: CredentialAlerts {
             if hasMultipleProviders {
                 for provider in providers {
                     let action = UIAlertAction(title: provider.name, style: .default) { _ in
-                        completion(.success(provider))
+                        completion(provider)
                     }
                     
                     alertController.addAction(action)
                 }
             } else {
                 let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    completion(.success(providers.first))
+                    completion(providers.first)
                 }
                 
                 alertController.addAction(okAction)
             }
             
             let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                completion(.success(nil))
+                completion(nil)
             }
             
             alertController.addAction(cancelAction)

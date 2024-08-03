@@ -50,8 +50,8 @@ extension CredentialManager: CredentialReauthenticationProvider {
 }
 
 
-// MARK: - SocialCredentialProvider
-extension CredentialManager {
+// MARK: - Private Methods
+private extension CredentialManager {
     func loadAppleCredential() async throws -> AppleCredentialInfo? {
         try await socialCredentialProvider.loadAppleCredential()
     }
@@ -59,20 +59,15 @@ extension CredentialManager {
     func loadGoogleCredential() async throws -> GoogleCredentialInfo? {
         try await socialCredentialProvider.loadGoogleCredential()
     }
-}
-
-
-// MARK: - Private Methods
-private extension CredentialManager {
+    
     func selectProvider(from linkedProviders: [AuthProvider]) async throws -> AuthProvider? {
+        if linkedProviders.isEmpty {
+            throw CredentialError.emptyAuthProviders
+        }
+        
         return try await withCheckedThrowingContinuation { continuation in
             alertHandler.showReauthenticationAlert(providers: linkedProviders) { result in
-                switch result {
-                case .success(let provider):
-                    continuation.resume(returning: provider)
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
+                continuation.resume(returning: result)
             }
         }
     }
@@ -103,7 +98,7 @@ private extension CredentialManager {
 protocol CredentialAlerts {
     func loadEmailSignUpInfo() async -> EmailSignUpInfo?
     func loadPassword(_ message: String) async -> String?
-    func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (Result<AuthProvider?, CredentialError>) -> Void)
+    func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (AuthProvider?) -> Void)
 }
 
 protocol SocialCredentialProvider {
