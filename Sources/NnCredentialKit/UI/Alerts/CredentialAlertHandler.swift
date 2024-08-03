@@ -142,9 +142,7 @@ fileprivate extension UITextField {
 
     func configureForPassword(isConfirm: Bool, accessId: CredentialKitAccessibilityId) {
         placeholder = "\(isConfirm ? "Confirm " : "")Password"
-        isSecureTextEntry = true
         autocorrectionType = .no
-        textContentType = isConfirm ? .familyName : .username /// prevents autofil strong password bs
         autocapitalizationType = .none
         accessibilityIdentifier = accessId.rawValue
     }
