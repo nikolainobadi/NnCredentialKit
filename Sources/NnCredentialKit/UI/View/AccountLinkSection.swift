@@ -8,6 +8,7 @@
 import SwiftUI
 import NnSwiftUIKit
 import AuthenticationServices
+import NnCredentialKitAccessibility
 
 public struct AccountLinkSection: View {
     @StateObject var viewModel: AccountLinkViewModel
@@ -40,6 +41,7 @@ public struct AccountLinkSection: View {
                             .underline()
                             .foregroundStyle(config.linkButtonColor)
                     }
+                    .accessibilityIdentifier(CredentialKitAccessibilityId.accountLinkButton.rawValue)
                 }
             }
         }

@@ -137,7 +137,7 @@ fileprivate extension UITextField {
         keyboardType = .emailAddress
         autocorrectionType = .no
         autocapitalizationType = .none
-        accessibilityIdentifier = SignUpAlertAccessibilityId.emailField.rawValue
+        accessibilityIdentifier = CredentialKitAccessibilityId.emailField.rawValue
     }
 
     func configureForPassword(isConfirm: Bool) {
@@ -147,9 +147,9 @@ fileprivate extension UITextField {
         autocapitalizationType = .none
         
         if isConfirm {
-            accessibilityIdentifier = SignUpAlertAccessibilityId.passwordField.rawValue
+            accessibilityIdentifier = CredentialKitAccessibilityId.passwordField.rawValue
         } else {
-            accessibilityIdentifier = SignUpAlertAccessibilityId.confirmField.rawValue
+            accessibilityIdentifier = CredentialKitAccessibilityId.confirmField.rawValue
         }
     }
 }
