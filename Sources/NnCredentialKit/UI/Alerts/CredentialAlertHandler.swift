@@ -17,7 +17,7 @@ final class CredentialAlertHandler {
 
 
 // MARK: - Alerts
-extension CredentialAlertHandler {
+extension CredentialAlertHandler: CredentialAlerts {
     func loadEmailSignUpInfo() async -> EmailSignUpInfo? {
         return await withCheckedContinuation { continuation in
             showEmailPasswordAlert("Please enter your new email and password.") { info in

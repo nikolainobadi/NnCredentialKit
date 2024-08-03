@@ -12,8 +12,8 @@ import AuthenticationServices
 public struct AccountLinkSection: View {
     @StateObject var viewModel: AccountLinkViewModel
     
-    public init(delegate: AccountLinkDelegate) {
-        self._viewModel = .init(wrappedValue: .customInit(delegate))
+    public init(delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope]) {
+        self._viewModel = .init(wrappedValue: .customInit(delegate, appleSignInScopes: appleSignInScopes))
     }
     
     public var body: some View {
@@ -57,23 +57,20 @@ fileprivate struct LinkRow: View {
 // MARK: - Preview
 #Preview {
     class PreviewDelegate: AccountLinkDelegate {
-        var appleSignInScopes: [ASAuthorization.Scope] { [] }
-        
         func loadLinkedProviders() -> [AuthProvider] { [] }
         func reauthenticate(with credientialType: CredentialType) async throws { }
         func linkProvider(with: CredentialType) async -> AccountCredentialResult { .success }
         func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult { .success }
     }
     
-    return AccountLinkSection(delegate: PreviewDelegate())
+    return AccountLinkSection(delegate: PreviewDelegate(), appleSignInScopes: [])
 }
 
 
 // MARK: - Extension Dependencies
 fileprivate extension AccountLinkViewModel {
-    static func customInit(_ delegate: AccountLinkDelegate) -> AccountLinkViewModel {
-        let socialProvider = SocialCredentialManager(appleSignInScopes: delegate.appleSignInScopes)
-        let credentialProvider = CredentialManager(socialCredentialProvider: socialProvider)
+    static func customInit(_ delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope]) -> AccountLinkViewModel {
+        let credentialProvider = CredentialManager(appleSignInScopes: appleSignInScopes)
         let reauthenticator = ReauthenticationManager(delegate: delegate, credentialProvider: credentialProvider)
         
         return .init(delegate: delegate, reauthenticator: reauthenticator, credentialProvider: credentialProvider)

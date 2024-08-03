@@ -8,11 +8,23 @@
 import AuthenticationServices
 
 final class CredentialManager {
-    private let alertHandler = CredentialAlertHandler()
+    private let alertHandler: CredentialAlerts
     private let socialCredentialProvider: SocialCredentialProvider
     
-    init(socialCredentialProvider: SocialCredentialProvider) {
+    init(alertHandler: CredentialAlerts, socialCredentialProvider: SocialCredentialProvider) {
+        self.alertHandler = alertHandler
         self.socialCredentialProvider = socialCredentialProvider
+    }
+}
+
+
+// MARK: - ConvenienceInit
+extension CredentialManager {
+    convenience init(appleSignInScopes: [ASAuthorization.Scope]) {
+        let alertHandler = CredentialAlertHandler()
+        let socialProvider = SocialCredentialManager(appleSignInScopes: appleSignInScopes)
+        
+        self.init(alertHandler: alertHandler, socialCredentialProvider: socialProvider)
     }
 }
 
@@ -101,6 +113,12 @@ private extension CredentialManager {
 
 
 // MARK: - Dependencies
+protocol CredentialAlerts {
+    func loadEmailSignUpInfo() async -> EmailSignUpInfo?
+    func loadPassword(_ message: String) async -> String?
+    func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (Result<AuthProvider?, CredentialError>) -> Void)
+}
+
 protocol SocialCredentialProvider {
     func loadAppleCredential() async throws -> AppleCredentialInfo?
     func loadGoogleCredential() async throws -> GoogleCredentialInfo?

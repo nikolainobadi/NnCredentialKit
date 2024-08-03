@@ -5,8 +5,6 @@
 //  Created by Nikolai Nobadi on 8/2/24.
 //
 
-import AuthenticationServices
-
 // MARK: - Public
 public protocol DeleteAccountDelegate: ReauthenticationDelegate {
     func deleteAccount() async -> AccountCredentialResult
@@ -18,8 +16,6 @@ public protocol ReauthenticationDelegate {
 }
 
 public protocol AccountLinkDelegate: ReauthenticationDelegate {
-    var appleSignInScopes: [ASAuthorization.Scope] { get }
-                            
     func linkProvider(with type: CredentialType) async -> AccountCredentialResult
     func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult
 }

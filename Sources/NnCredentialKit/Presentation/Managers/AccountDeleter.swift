@@ -21,8 +21,7 @@ public final class AccountDeleter {
 // MARK: - Init
 public extension AccountDeleter {
     convenience init(delegate: DeleteAccountDelegate) {
-        let socialProvider = SocialCredentialManager(appleSignInScopes: [])
-        let credentialProvider = CredentialManager(socialCredentialProvider: socialProvider)
+        let credentialProvider = CredentialManager(appleSignInScopes: [])
         let reauthenticator = ReauthenticationManager(delegate: delegate, credentialProvider: credentialProvider)
         
         self.init(delegate: delegate, reauthenticator:  reauthenticator)
