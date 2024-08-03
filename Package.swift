@@ -17,14 +17,14 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/nikolainobadi/NnTestKit", branch: "main"),
         .package(url: "https://github.com/nikolainobadi/NnSwiftUIKit", branch: "main"),
-        .package(url: "https://github.com/nikolainobadi/NnGoogleKit.git", branch: "google-ads"), // TODO: - update to proper version number
+        .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "7.0.0"),
     ],
     targets: [
         .target(
             name: "NnCredentialKit",
             dependencies: [
                 "NnSwiftUIKit",
-                .product(name: "NnGoogleSignIn", package: "NnGoogleKit")
+                .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS")
             ],
             resources: [
                 .process("Resources/Media.xcassets")

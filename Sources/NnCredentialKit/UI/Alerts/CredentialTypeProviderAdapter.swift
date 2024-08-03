@@ -5,8 +5,6 @@
 //  Created by Nikolai Nobadi on 8/2/24.
 //
 
-import NnGoogleSignIn
-
 final class CredentialTypeProviderAdapter {
     private let alertHandler = CredentialAlertHandler()
 }
