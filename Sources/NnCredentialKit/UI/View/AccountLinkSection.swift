@@ -12,42 +12,33 @@ import AuthenticationServices
 public struct AccountLinkSection: View {
     @StateObject var viewModel: AccountLinkViewModel
     
-    public init(delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope]) {
-        self._viewModel = .init(wrappedValue: .customInit(delegate, appleSignInScopes: appleSignInScopes))
+    let config: AccountLinkSectionColorsConfig
+    
+    public init(config: AccountLinkSectionColorsConfig, delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope]) {
+        self.config = config
+        self._viewModel = .init(wrappedValue: .init(delegate: delegate, appleSignInScopes: appleSignInScopes))
     }
     
     public var body: some View {
         Section("Sign-in Methods") {
             ForEach(viewModel.providers, id: \.name) { provider in
-                LinkRow(provider: provider) {
-                    try await viewModel.linkAction(provider)
+                HStack {
+                    VStack {
+                        Text(provider.name)
+                            .font(.title3)
+                            .foregroundStyle(config.providerNameColor)
+                        
+                        Text(provider.linkedEmail)
+                            .foregroundStyle(config.emailColor)
+                            .nnOnlyShow(when: !provider.linkedEmail.isEmpty)
+                    }
+                    
+                    NnAsyncTryButton(action: { try await viewModel.linkAction(provider) }) {
+                        Text(provider.isLinked ? "Unlink" : "Link")
+                            .underline()
+                            .foregroundStyle(config.linkButtonColor)
+                    }
                 }
-            }
-        }
-    }
-}
-
-
-// MARK: - Row
-fileprivate struct LinkRow: View {
-    let provider: AuthProvider
-    let linkAction: () async throws -> Void
-    
-    var body: some View {
-        HStack {
-            VStack {
-                Text(provider.name)
-                    .font(.title3)
-//                    .foregroundColor(config.titleColor)
-                
-                Text(provider.linkedEmail)
-//                    .foregroundColor(config.emailColor)
-                    .nnOnlyShow(when: !provider.linkedEmail.isEmpty)
-            }
-            
-            NnAsyncTryButton(action: linkAction) {
-                Text(provider.isLinked ? "Unlink" : "Link")
-                    .underline()
             }
         }
     }
@@ -63,16 +54,5 @@ fileprivate struct LinkRow: View {
         func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult { .success }
     }
     
-    return AccountLinkSection(delegate: PreviewDelegate(), appleSignInScopes: [])
-}
-
-
-// MARK: - Extension Dependencies
-fileprivate extension AccountLinkViewModel {
-    static func customInit(_ delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope]) -> AccountLinkViewModel {
-        let credentialProvider = CredentialManager(appleSignInScopes: appleSignInScopes)
-        let reauthenticator = ReauthenticationManager(delegate: delegate, credentialProvider: credentialProvider)
-        
-        return .init(delegate: delegate, reauthenticator: reauthenticator, credentialProvider: credentialProvider)
-    }
+    return AccountLinkSection(config: .init(), delegate: PreviewDelegate(), appleSignInScopes: [])
 }

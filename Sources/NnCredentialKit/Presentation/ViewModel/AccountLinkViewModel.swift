@@ -7,8 +7,8 @@
 
 import Foundation
 
-final class AccountLinkViewModel: ObservableObject {
-    @Published var providers: [AuthProvider]
+public final class AccountLinkViewModel: ObservableObject {
+    @Published public var providers: [AuthProvider]
     
     private let delegate: AccountLinkDelegate
     private let reauthenticator: Reauthenticator
@@ -24,7 +24,7 @@ final class AccountLinkViewModel: ObservableObject {
 
 
 // MARK: - Actions
-extension AccountLinkViewModel {
+public extension AccountLinkViewModel {
     func linkAction(_ provider: AuthProvider) async throws {
         if provider.isLinked {
             try await unlinkAccount(provider)
