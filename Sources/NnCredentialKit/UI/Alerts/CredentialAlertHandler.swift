@@ -76,7 +76,7 @@ private extension CredentialAlertHandler {
             let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
             
             alertController.addTextField { textField in
-                textField.configureForPassword(isConfirm: false)
+                textField.configureForPassword(isConfirm: false, accessId: .reauthPasswordField)
             }
             
             alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
@@ -105,11 +105,11 @@ private extension CredentialAlertHandler {
             }
             
             alertController.addTextField { textField in
-                textField.configureForPassword(isConfirm: false)
+                textField.configureForPassword(isConfirm: false, accessId: .passwordField)
             }
             
             alertController.addTextField { textField in
-                textField.configureForPassword(isConfirm: true)
+                textField.configureForPassword(isConfirm: true, accessId: .confirmField)
             }
             
             alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
@@ -140,17 +140,12 @@ fileprivate extension UITextField {
         accessibilityIdentifier = CredentialKitAccessibilityId.emailField.rawValue
     }
 
-    func configureForPassword(isConfirm: Bool) {
+    func configureForPassword(isConfirm: Bool, accessId: CredentialKitAccessibilityId) {
         placeholder = "\(isConfirm ? "Confirm " : "")Password"
         isSecureTextEntry = true
         autocorrectionType = .no
         autocapitalizationType = .none
-        
-        if isConfirm {
-            accessibilityIdentifier = CredentialKitAccessibilityId.passwordField.rawValue
-        } else {
-            accessibilityIdentifier = CredentialKitAccessibilityId.confirmField.rawValue
-        }
+        accessibilityIdentifier = accessId.rawValue
     }
 }
 

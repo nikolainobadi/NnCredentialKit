@@ -10,4 +10,5 @@ public enum CredentialKitAccessibilityId: String {
     case passwordField = "signUpPasswordField"
     case confirmField = "signUpConfirmField"
     case accountLinkButton
+    case reauthPasswordField
 }
