@@ -19,8 +19,8 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/nikolainobadi/NnTestKit", branch: "main"),
-        .package(url: "https://github.com/nikolainobadi/NnSwiftUIKit", branch: "main"),
+        .package(url: "https://github.com/nikolainobadi/NnTestKit", from: "1.0.0"),
+        .package(url: "https://github.com/nikolainobadi/NnSwiftUIKit", from: "1.0.0"),
         .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "7.0.0"),
     ],
     targets: [

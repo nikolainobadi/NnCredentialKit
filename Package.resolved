@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nikolainobadi/NnSwiftUIKit",
       "state" : {
-        "branch" : "main",
-        "revision" : "c364a80c734e5a169f774a43efb996dc4ffb61d7"
+        "revision" : "1a18f7240313013e6c1741d497680e217978c9b2",
+        "version" : "1.0.0"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nikolainobadi/NnTestKit",
       "state" : {
-        "branch" : "main",
-        "revision" : "13edd95fa90c1a506f1a0ffa664324e743438912"
+        "revision" : "25fc436219439e159972f2479b0aa73a07d50c44",
+        "version" : "1.0.0"
       }
     }
   ],
