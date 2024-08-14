@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import NnSwiftUIKit
 
 /// An enum representing common errors that can occur during credential-related operations.
 enum CredentialError: Error {
@@ -22,3 +23,19 @@ enum CredentialError: Error {
     case cannotUnlinkOnlyProvider
 }
 
+
+// MARK: - DisplayableError
+extension CredentialError: NnDisplayableError {
+    var message: String {
+        switch self {
+        case .cancelled:
+            return "action cancelled."
+        case .emptyAuthProviders:
+            return "This account is not linked to any auth providers."
+        case .passwordsMustMatch:
+            return "The passwords must match."
+        case .cannotUnlinkOnlyProvider:
+            return "You cannot unlink your account if it is only linked to a single auth provider."
+        }
+    }
+}
