@@ -1,5 +1,10 @@
 
 # NnCredentialKit
+![](https://badgen.net/badge/Swift/5.9/orange)
+![](https://badgen.net/badge/platform/iOS?list=|&color=grey)
+![](https://badgen.net/badge/distro/SPM%20only?color=red)
+![](https://badgen.net/badge/license/MIT/blue)
+
 NnCredentialKit is a comprehensive Swift package designed to handle user authentication workflows, including email/password sign-up, social login (Apple, Google), and account linking. This package streamlines the process of managing credentials, reauthentication, and account deletion.
 
 ## Features
