@@ -1,10 +1,8 @@
 
 # NnCredentialKit
-
 NnCredentialKit is a comprehensive Swift package designed to handle user authentication workflows, including email/password sign-up, social login (Apple, Google), and account linking. This package streamlines the process of managing credentials, reauthentication, and account deletion.
 
 ## Features
-
 - **Account Link Section**: Easily integrate account linking for various providers, with customizable colors and accessibility support.
 - **Credential Management**: Load and manage credentials for Apple, Google, and email/password logins.
 - **Reauthentication Workflow**: Handle reauthentication for sensitive actions using custom alerts.
@@ -13,19 +11,44 @@ NnCredentialKit is a comprehensive Swift package designed to handle user authent
 
 ## Installation
 
-To integrate `NnCredentialKit` into your project, you can use Swift Package Manager:
+### Xcode Projects
+To integrate `NnCredentialKit` into your Xcode project using Swift Package Manager, follow these steps:
 
 1. In Xcode, go to **File > Swift Packages > Add Package Dependency**.
-2. Enter the repository URL.
-3. Select the version or branch you want to use.
+2. Enter the following repository URL:
+   ```
+   https://github.com/nikolainobadi/NnCredentialKit
+   ```
+3. Choose the version 1.0.0.
+4. Select the target where you want to add the package.
+
+### Swift Package
+If you are using `NnCredentialKit` in another Swift package, add it to your `Package.swift` dependencies:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "1.0.0")
+]
+```
+
+Then, in the target you want to use `NnCredentialKit`, add it to the list of dependencies:
+
+```swift
+.target(
+    name: "YourTargetName",
+    dependencies: [
+        "NnCredentialKit"
+    ]
+)
+```
 
 ## Usage
-### Account Linking
 
+### Account Linking
 The `AccountLinkSection` view provides a way to display and manage linked accounts within your app. It supports Apple, Google, and email/password providers.
 
 ```swift
-import CredentialKit
+import NnCredentialKit
 
 struct ContentView: View {
     var body: some View {
@@ -47,15 +70,13 @@ let appleCredentialInfo = try await AppleSignInCoordinator().createAppleTokenInf
 ```
 
 ## Dependencies
-`CredentialKit` depends on the following external libraries:
+`NnCredentialKit` depends on the following external libraries:
 
 - **NnSwiftUIKit**: Provides extended UI components and utilities.
 - **AuthenticationServices**: Used for Apple Sign-In.
 
-
 ## Contributing
-Contributions are welcome! If you have ideas for new features or improvements, feel free to open an issue or submit a pull request.
-
+Any feedback or ideas to enhance NnCredentialKit would be well received. Please feel free to [open an issue](https://github.com/nikolainobadi/NnCredentialKit/issues/new) if you'd like to help improve this swift package.
 
 ## License
-`CredentialKit` is available under the MIT license. See the LICENSE file for more information.
+`NnCredentialKit` is available under the MIT license. See the LICENSE file for more information.
