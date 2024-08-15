@@ -50,7 +50,7 @@ Then, in the target you want to use `NnCredentialKit`, add it to the list of dep
 ## Usage
 
 ### Account Linking
-The `AccountLinkSection` view provides a way to display and manage linked accounts within your app. It supports Apple, Google, and email/password providers.
+The `AccountLinkSection` view provides a way to display and manage linked accounts within your app. It supports Apple, Google, and email/password providers. It requires a `AccountLinkSectionColorsConfig` for customizing text colors and an `AccountLinkDelegate` to perform the credential linking.
 
 ```swift
 import NnCredentialKit
