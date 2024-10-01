@@ -6,24 +6,27 @@
 //
 
 import SwiftUI
-import NnSwiftUIKit
 import AuthenticationServices
 import NnCredentialKitAccessibility
 
 /// A view that displays a section for managing account link/unlink operations.
-public struct AccountLinkSection: View {
+public struct AccountLinkSection<LinkButton: View>: View {
     @StateObject var viewModel: AccountLinkViewModel
     
     /// The configuration for customizing the colors in the section.
     let config: AccountLinkSectionColorsConfig
+    
+    /// Generic view meant for a Button that can handle async throws methods
+    let linkButton: (AccountLinkButtonDelegate) -> LinkButton
     
     /// Initializes the section with the specified configuration, delegate, and Apple sign-in scopes.
     /// - Parameters:
     ///   - config: The color configuration for the section.
     ///   - delegate: The delegate responsible for handling account link actions.
     ///   - appleSignInScopes: The scopes to request during Apple Sign-In.
-    public init(config: AccountLinkSectionColorsConfig, delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope]) {
+    public init(config: AccountLinkSectionColorsConfig, delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope], @ViewBuilder linkButton: @escaping (AccountLinkButtonDelegate) -> LinkButton) {
         self.config = config
+        self.linkButton = linkButton
         self._viewModel = .init(wrappedValue: .init(delegate: delegate, appleSignInScopes: appleSignInScopes))
     }
     
@@ -36,19 +39,16 @@ public struct AccountLinkSection: View {
                             .font(.title3)
                             .foregroundStyle(config.providerNameColor)
                         
-                        Text(provider.linkedEmail)
-                            .foregroundStyle(config.emailColor)
-                            .nnOnlyShow(when: !provider.linkedEmail.isEmpty)
+                        if !provider.linkedEmail.isEmpty {
+                            Text(provider.linkedEmail)
+                                .foregroundStyle(config.emailColor)
+                        }
                     }
                     
                     Spacer()
                     
-                    NnAsyncTryButton(action: { try await viewModel.linkAction(provider) }) {
-                        Text(provider.isLinked ? "Unlink" : "Link")
-                            .underline()
-                            .foregroundStyle(config.linkButtonColor)
-                    }
-                    .accessibilityIdentifier(CredentialKitAccessibilityId.accountLinkButton.rawValue)
+                    linkButton(.init(provider: provider, onLinkAction: viewModel.linkAction(_:)))
+                        .accessibilityIdentifier(CredentialKitAccessibilityId.accountLinkButton.rawValue)
                 }
             }
         }
@@ -69,5 +69,11 @@ public struct AccountLinkSection: View {
         func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult { .success }
     }
     
-    return AccountLinkSection(config: .init(), delegate: PreviewDelegate(), appleSignInScopes: [])
+    return AccountLinkSection(config: .init(), delegate: PreviewDelegate(), appleSignInScopes: []) { delegate in
+        Button(delegate.buttonText) {
+            Task {
+                try? await delegate.linkAction()
+            }
+        }
+    }
 }
