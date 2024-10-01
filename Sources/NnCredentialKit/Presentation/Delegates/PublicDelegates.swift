@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  PublicDelegates.swift
 //  
 //
 //  Created by Nikolai Nobadi on 8/13/24.
@@ -39,4 +39,26 @@ public protocol AccountLinkDelegate: ReauthenticationDelegate {
     /// - Parameter type: The type of the provider to unlink.
     /// - Returns: The result of the account unlink operation.
     func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult
+}
+
+
+// MARK: - AccountLinkButtonDelegate
+public struct AccountLinkButtonDelegate {
+    private let provider: AuthProvider
+    private let onLinkAction: (AuthProvider) async throws -> Void
+    
+    init(provider: AuthProvider, onLinkAction: @escaping (AuthProvider) async throws -> Void) {
+        self.provider = provider
+        self.onLinkAction = onLinkAction
+    }
+}
+
+public extension AccountLinkButtonDelegate {
+    var buttonText: String {
+        return provider.isLinked ? "Unlink" : "Link"
+    }
+    
+    func linkAction() async throws {
+        try await onLinkAction(provider)
+    }
 }

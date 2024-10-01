@@ -51,10 +51,9 @@ public extension AccountLinkViewModel {
     }
 }
 
-// MARK: - Private Methods
 
+// MARK: - Private Methods
 private extension AccountLinkViewModel {
-    
     /// Links an account to a specified credential type.
     /// - Parameters:
     ///   - provider: The provider to be linked.
