@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import NnSwiftUIKit
 import AuthenticationServices
 
 /// A manager responsible for loading social credentials (Apple, Google).

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import NnSwiftUIKit
 import NnCredentialKitAccessibility
 
 /// A class responsible for handling credential-related alerts.

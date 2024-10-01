@@ -37,15 +37,6 @@
       }
     },
     {
-      "identity" : "nnswiftuikit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nikolainobadi/NnSwiftUIKit",
-      "state" : {
-        "revision" : "1a18f7240313013e6c1741d497680e217978c9b2",
-        "version" : "1.0.0"
-      }
-    },
-    {
       "identity" : "nntestkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nikolainobadi/NnTestKit",
