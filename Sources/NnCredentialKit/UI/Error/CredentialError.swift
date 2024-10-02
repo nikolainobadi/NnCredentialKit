@@ -8,7 +8,7 @@
 import Foundation
 
 /// An enum representing common errors that can occur during credential-related operations.
-enum CredentialError: Error {
+public enum CredentialError: Error {
     /// The operation was cancelled by the user.
     case cancelled
     
