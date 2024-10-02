@@ -32,7 +32,7 @@ If you are using `NnCredentialKit` in another Swift package, add it to your `Pac
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "2.0.0")
+    .package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "2.0.1")
 ]
 ```
 
