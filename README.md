@@ -24,7 +24,7 @@ To integrate `NnCredentialKit` into your Xcode project using Swift Package Manag
    ```
    https://github.com/nikolainobadi/NnCredentialKit
    ```
-3. Choose the version 1.0.0.
+3. Choose the version 2.1.0.
 4. Select the target where you want to add the package.
 
 ### Swift Package
@@ -32,7 +32,7 @@ If you are using `NnCredentialKit` in another Swift package, add it to your `Pac
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "2.0.1")
+    .package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "2.1.0")
 ]
 ```
 
