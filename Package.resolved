@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nikolainobadi/NnTestKit",
       "state" : {
-        "revision" : "25fc436219439e159972f2479b0aa73a07d50c44",
-        "version" : "1.0.0"
+        "revision" : "b4a4bdfae12977b9e0e1c157eae6e78c96adb935",
+        "version" : "1.1.0"
       }
     }
   ],
