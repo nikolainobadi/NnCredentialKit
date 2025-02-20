@@ -1,7 +1,7 @@
 
 # NnCredentialKit
-![](https://badgen.net/badge/Swift/5.9/orange)
-![](https://badgen.net/badge/platform/iOS?list=|&color=grey)
+![](https://badgen.net/badge/Swift/5.7/orange)
+![](https://badgen.net/badge/platform/iOS%2016+/grey)
 ![](https://badgen.net/badge/distro/SPM%20only?color=red)
 ![](https://badgen.net/badge/license/MIT/blue)
 
@@ -32,7 +32,7 @@ If you are using `NnCredentialKit` in another Swift package, add it to your `Pac
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "2.1.0")
+    .package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "2.0.0")
 ]
 ```
 
