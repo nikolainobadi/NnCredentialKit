@@ -8,6 +8,7 @@
 import Foundation
 
 /// A manager responsible for handling reauthentication flows.
+@MainActor
 final class ReauthenticationManager {
     private let delegate: ReauthenticationDelegate
     private let credentialProvider: CredentialReauthenticationProvider

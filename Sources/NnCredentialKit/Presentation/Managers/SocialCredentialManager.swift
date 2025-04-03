@@ -9,6 +9,7 @@ import UIKit
 import AuthenticationServices
 
 /// A manager responsible for loading social credentials (Apple, Google).
+@MainActor
 public final class SocialCredentialManager {
     private let appleSignInScopes: [ASAuthorization.Scope]
     
@@ -31,7 +32,6 @@ extension SocialCredentialManager: SocialCredentialProvider {
     /// Loads the Google credential for authentication.
     /// - Returns: The loaded `GoogleCredentialInfo` or `nil` if the operation fails.
     public func loadGoogleCredential() async throws -> GoogleCredentialInfo? {
-        let rootVC = await UIApplication.shared.getTopViewController()
-        return try await GoogleSignInHandler.signIn(rootVC: rootVC)
+        return try await GoogleSignInHandler.signIn(rootVC: UIApplication.shared.getTopViewController())
     }
 }

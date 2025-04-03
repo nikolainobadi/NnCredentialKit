@@ -8,6 +8,7 @@
 import Foundation
 
 /// A class responsible for managing credentials for various authentication providers.
+@MainActor
 final class CredentialManager {
     private let alertHandler: CredentialAlerts
     private let socialCredentialProvider: SocialCredentialProvider
@@ -100,12 +101,14 @@ private extension CredentialManager {
 
 
 // MARK: - Dependencies
+@MainActor
 protocol CredentialAlerts {
     func loadEmailSignUpInfo() async -> EmailSignUpInfo?
     func loadPassword(_ message: String) async -> String?
     func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (AuthProvider?) -> Void)
 }
 
+@MainActor
 protocol SocialCredentialProvider {
     func loadAppleCredential() async throws -> AppleCredentialInfo?
     func loadGoogleCredential() async throws -> GoogleCredentialInfo?

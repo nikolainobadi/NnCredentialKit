@@ -8,6 +8,7 @@
 import Foundation
 
 /// A view model responsible for managing account link/unlink actions.
+@MainActor
 public final class AccountLinkViewModel: ObservableObject {
     /// The list of providers currently available for linking/unlinking.
     @Published public var providers: [AuthProvider]
@@ -34,7 +35,6 @@ public final class AccountLinkViewModel: ObservableObject {
 // MARK: - Actions
 public extension AccountLinkViewModel {
     /// Loads the supported providers for linking/unlinking.
-    @MainActor
     func loadProviders() {
         providers = delegate.loadSupportedProviders()
     }
@@ -47,7 +47,8 @@ public extension AccountLinkViewModel {
         } else {
             try await linkAccount(provider)
         }
-        await loadProviders()
+        
+        loadProviders()
     }
 }
 

@@ -8,7 +8,7 @@
 import Foundation
 
 /// A structure representing an authentication provider and its associated credentials.
-public struct AuthProvider: Hashable {
+public struct AuthProvider: Hashable, Sendable {
     /// The email address linked to this provider.
     public let linkedEmail: String
     
@@ -46,6 +46,6 @@ extension AuthProvider {
 
 // MARK: - Dependencies
 /// An enum representing the types of authentication providers supported by the system.
-public enum AuthProviderType: String, CaseIterable {
+public enum AuthProviderType: String, CaseIterable, Sendable {
     case apple, google, emailPassword
 }

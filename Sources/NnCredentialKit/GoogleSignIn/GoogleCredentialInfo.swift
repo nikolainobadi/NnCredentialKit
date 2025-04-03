@@ -6,7 +6,7 @@
 //
 
 /// A structure representing the credentials obtained from Google Sign-In.
-public struct GoogleCredentialInfo {
+public struct GoogleCredentialInfo: Sendable {
     /// The user's email address.
     public let email: String?
     

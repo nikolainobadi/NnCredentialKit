@@ -6,6 +6,7 @@
 //
 
 /// A class responsible for managing the account deletion process.
+@MainActor
 public final class AccountDeleter {
     private let delegate: DeleteAccountDelegate
     private let reauthenticator: Reauthenticator
