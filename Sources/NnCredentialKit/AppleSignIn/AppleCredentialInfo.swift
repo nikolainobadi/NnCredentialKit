@@ -6,7 +6,7 @@
 //
 
 /// A structure representing the credentials obtained from Apple Sign-In.
-public struct AppleCredentialInfo {
+public struct AppleCredentialInfo: Sendable {
     /// A nonce used to verify the identity token.
     public let nonce: String
     
