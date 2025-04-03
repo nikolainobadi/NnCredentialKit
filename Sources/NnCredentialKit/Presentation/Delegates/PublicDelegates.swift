@@ -6,6 +6,7 @@
 //
 
 /// A protocol defining the required methods for deleting an account.
+@MainActor
 public protocol DeleteAccountDelegate: ReauthenticationDelegate {
     /// Deletes the user's account.
     /// - Returns: The result of the account deletion operation.
@@ -13,6 +14,7 @@ public protocol DeleteAccountDelegate: ReauthenticationDelegate {
 }
 
 /// A protocol defining the required methods for handling reauthentication.
+@MainActor
 public protocol ReauthenticationDelegate {
     /// Loads the providers currently linked to the user's account.
     /// - Returns: An array of linked `AuthProvider` objects.
@@ -25,6 +27,7 @@ public protocol ReauthenticationDelegate {
 }
 
 /// A protocol defining the required methods for handling account link operations.
+@MainActor
 public protocol AccountLinkDelegate: ReauthenticationDelegate {
     /// Loads the providers supported by the application.
     /// - Returns: An array of supported `AuthProvider` objects.

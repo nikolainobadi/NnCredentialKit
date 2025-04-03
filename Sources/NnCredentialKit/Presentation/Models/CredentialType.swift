@@ -8,7 +8,7 @@
 import Foundation
 
 /// An enum representing the different types of credentials used for authentication.
-public enum CredentialType {
+public enum CredentialType: Sendable {
     case apple(AppleCredentialInfo)
     case google(GoogleCredentialInfo)
     case emailPassword(email: String, password: String)

@@ -42,11 +42,14 @@ public extension AccountDeleter {
         let result = await delegate.deleteAccount()
         
         switch result {
-        case .success: break
-        case .failure(let error): throw error
-        case .reauthRequired: try await reauthenticator.start { [unowned self] in
-            try await deleteAccount()
-        }
+        case .success:
+            break
+        case .failure(let error):
+            throw error
+        case .reauthRequired:
+            try await reauthenticator.start { [unowned self] in
+                try await deleteAccount()
+            }
         }
     }
 }
