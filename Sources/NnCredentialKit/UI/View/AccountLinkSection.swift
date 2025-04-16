@@ -61,7 +61,7 @@ public struct AccountLinkSection<LinkButton: View>: View {
 
 // MARK: - Preview
 #Preview {
-    class PreviewDelegate: AccountLinkDelegate {
+    class PreviewDelegate: AccountLinkDelegate, @unchecked Sendable {
         func loadLinkedProviders() -> [AuthProvider] { [] }
         func loadSupportedProviders() -> [AuthProvider] { [] }
         func reauthenticate(with credientialType: CredentialType) async throws { }

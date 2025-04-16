@@ -101,7 +101,7 @@ private extension ReauthenticatorTests {
 
 // MARK: - Stubs
 private extension ReauthenticatorTests {
-    final class MockDelegate: ReauthenticationDelegate {
+    final class MockDelegate: ReauthenticationDelegate, @unchecked Sendable {
         private let throwError: Bool
         private let linkedProviders: [AuthProvider]
         private(set) var credentialType: CredentialType?

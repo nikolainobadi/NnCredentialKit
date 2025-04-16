@@ -54,7 +54,7 @@ private extension AccountDeleterTests {
 
 // MARK: - Helper Classes
 private extension AccountDeleterTests {
-    final class StubDelegate: DeleteAccountDelegate {
+    final class StubDelegate: DeleteAccountDelegate, @unchecked Sendable {
         private let store: StubResultStore
 
         init(firstResult: AccountCredentialResult, secondResult: AccountCredentialResult) {

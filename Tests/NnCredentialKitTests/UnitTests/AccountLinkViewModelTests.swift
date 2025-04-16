@@ -102,39 +102,21 @@ struct AccountLinkViewModelTests {
 
 // MARK: - SUT
 private extension AccountLinkViewModelTests {
-    func makeSUT(
-        providers: [AuthProvider] = [],
-        credentialType: CredentialType? = nil,
-        firstResult: AccountCredentialResult = .success,
-        secondResult: AccountCredentialResult = .success,
-        throwProviderError: Bool = false,
-        throwReauthError: Bool = false
-    ) -> (sut: AccountLinkViewModel, delegate: MockDelegate) {
-        let delegate = MockDelegate(
-            firstResult: firstResult,
-            secondResult: secondResult,
-            supportedProviders: providers
-        )
-
+    func makeSUT(providers: [AuthProvider] = [], credentialType: CredentialType? = nil, firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwProviderError: Bool = false, throwReauthError: Bool = false) -> (sut: AccountLinkViewModel, delegate: MockDelegate) {
+        let delegate = MockDelegate(firstResult: firstResult, secondResult: secondResult, supportedProviders: providers)
         let auth = MockReauthenticator(throwError: throwReauthError)
         let provider = StubProvider(credentialType: credentialType, throwError: throwProviderError)
-
-        let sut = AccountLinkViewModel(
-            providers: providers,
-            delegate: delegate,
-            reauthenticator: auth,
-            credentialProvider: provider
-        )
+        let sut = AccountLinkViewModel(providers: providers, delegate: delegate, reauthenticator: auth, credentialProvider: provider)
 
         return (sut, delegate)
     }
     
     func makeAuthProvider(_ type: AuthProviderType, email: String = "") -> AuthProvider {
-        .init(linkedEmail: email, type: type)
+        return .init(linkedEmail: email, type: type)
     }
     
     func makeEmailPasswordCredential(email: String = "tester@gmail.com", password: String = "tester") -> CredentialType {
-        .emailPassword(email: email, password: password)
+        return .emailPassword(email: email, password: password)
     }
 }
 
@@ -159,7 +141,7 @@ private extension AccountLinkViewModelTests {
         }
     }
 
-    final class MockDelegate: AccountLinkDelegate {
+    final class MockDelegate: AccountLinkDelegate, @unchecked Sendable {
         private let store: StubResultStore
         private let supportedProviders: [AuthProvider]
         private(set) var credentialType: CredentialType?
