@@ -30,9 +30,11 @@ extension ReauthenticationManager: Reauthenticator {
     /// - Parameter actionAfterReauth: The action to perform after reauthentication.
     /// - Throws: An error if reauthentication or the subsequent action fails.
     func start(actionAfterReauth: @escaping () async throws -> Void) async throws {
-        let linkedProviders = delegate.loadLinkedProviders()
+        let linkedProviders = delegate.loadLinkedProviders().filter({ $0.isLinked })
         
-        if linkedProviders.isEmpty { throw CredentialError.emptyAuthProviders }
+        if linkedProviders.isEmpty {
+            throw CredentialError.emptyAuthProviders
+        }
         
         guard let selectedCredentialType = try await credentialProvider.loadReauthCredential(linkedProviders: linkedProviders) else {
             throw CredentialError.cancelled
