@@ -43,11 +43,11 @@ public protocol AccountLinkDelegate: ReauthenticationDelegate {
 
 
 // MARK: - AccountLinkButtonDelegate
-public struct AccountLinkButtonDelegate {
+public struct AccountLinkButtonDelegate: Sendable {
     private let provider: AuthProvider
-    private let onLinkAction: (AuthProvider) async throws -> Void
+    private let onLinkAction: @Sendable (AuthProvider) async throws -> Void
     
-    init(provider: AuthProvider, onLinkAction: @escaping (AuthProvider) async throws -> Void) {
+    init(provider: AuthProvider, onLinkAction: @Sendable @escaping (AuthProvider) async throws -> Void) {
         self.provider = provider
         self.onLinkAction = onLinkAction
     }
