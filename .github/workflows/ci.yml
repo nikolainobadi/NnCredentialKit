@@ -32,8 +32,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
 
+      - name: Cache Ruby gems
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/lib/ruby/gems
+          key: ${{ runner.os }}-ruby-gems
+      
       - name: Install xcpretty
-        run: brew install xcpretty
+        run: gem install xcpretty
 
       - name: Build
         run: swift build
