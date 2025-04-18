@@ -6,6 +6,7 @@
 //
 
 /// A protocol defining the required methods for handling reauthentication flows.
+@MainActor
 protocol Reauthenticator {
     /// Starts the reauthentication process and performs an action upon successful reauthentication.
     /// - Parameter actionAfterReauth: The action to perform after reauthentication.
@@ -14,6 +15,7 @@ protocol Reauthenticator {
 }
 
 /// A protocol defining the required methods for loading credentials.
+@MainActor
 protocol CredentialTypeProvider {
     /// Loads the credential for a specific authentication provider type.
     /// - Parameter type: The type of the authentication provider.
@@ -22,6 +24,7 @@ protocol CredentialTypeProvider {
 }
 
 /// A protocol defining the required methods for loading reauthentication credentials.
+@MainActor
 protocol CredentialReauthenticationProvider {
     /// Loads the credential for reauthentication with linked providers.
     /// - Parameter linkedProviders: The list of linked authentication providers.

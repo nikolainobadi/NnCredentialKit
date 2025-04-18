@@ -5,130 +5,131 @@
 //  Created by Nikolai Nobadi on 8/2/24.
 //
 
-import XCTest
-import NnTestHelpers
+import Testing
 @testable import NnCredentialKit
 
-final class ReauthenticatorTests: XCTestCase {
-    func test_starting_values_are_empty() {
-        let (_, delegate) = makeSUT()
-        
-        XCTAssertNil(delegate.credentialType)
-    }
-    
-    func test_error_is_thrown_when_no_linked_providers_exist() async {
+@MainActor
+struct ReauthenticatorTests {
+    @Test("Throws if no linked providers exist")
+    func throwsIfNoLinkedProvidersExist() async {
         let sut = makeSUT().sut
-        
-        await asyncAssertThrownError(expectedError: CredentialError.emptyAuthProviders) {
+
+        await #expect(throws: CredentialError.emptyAuthProviders) {
             try await sut.start(actionAfterReauth: { })
         }
     }
-    
-    func test_cancelled_error_is_thrown_when_reauthentication_is_refused() async {
-        let linkedProviders = makeLinkedProviders()
-        let sut = makeSUT(linkedProviders: linkedProviders).sut
-        
-        await asyncAssertThrownError(expectedError: CredentialError.cancelled) {
+
+    @Test("Throws if reauthentication is cancelled")
+    func throwsIfReauthIsCancelled() async {
+        let linked = makeLinkedProviders()
+        let sut = makeSUT(linkedProviders: linked).sut
+
+        await #expect(throws: CredentialError.cancelled) {
             try await sut.start(actionAfterReauth: { })
         }
     }
-    
-    func test_selected_credential_is_used_to_reauthenticate() async {
-        let linkedProviders = makeLinkedProviders()
-        let selectedCredential = makeEmailPasswordCredential()
-        let (sut, delegate) = makeSUT(linkedProviders: linkedProviders, credentialType: selectedCredential)
-        
-        await asyncAssertNoErrorThrown {
-            try await sut.start(actionAfterReauth: { })
-        }
-        
-        XCTAssertNotNil(delegate.credentialType)
+
+    @Test("Uses selected credential for reauthentication")
+    func usesSelectedCredentialForReauth() async throws {
+        let linked = makeLinkedProviders()
+        let credential = makeEmailPasswordCredential()
+        let (sut, delegate) = makeSUT(linkedProviders: linked, credentialType: credential)
+
+        try await sut.start(actionAfterReauth: { })
+
+        #expect(delegate.credentialType?.id == credential.id)
     }
-    
-    func test_action_is_performed_after_successful_reauthentication() async {
-        let exp = expectation(description: "waiting for reauth")
-        
-        let linkedProviders = makeLinkedProviders()
-        let selectedCredential = makeEmailPasswordCredential()
-        let (sut, _) = makeSUT(linkedProviders: linkedProviders, credentialType: selectedCredential)
-        
-        await asyncAssertNoErrorThrown {
+
+    @Test("Performs action after successful reauth")
+    func performsActionAfterReauth() async throws {
+        var called = false
+        let linked = makeLinkedProviders()
+        let credential = makeEmailPasswordCredential()
+        let (sut, _) = makeSUT(linkedProviders: linked, credentialType: credential)
+
+        try await sut.start {
+            called = true
+        }
+
+        #expect(called)
+    }
+
+    @Test("Skips action if reauth fails")
+    func skipsActionIfReauthFails() async throws {
+        var called = false
+        let linked = makeLinkedProviders()
+        let credential = makeEmailPasswordCredential()
+        let (sut, _) = makeSUT(linkedProviders: linked, credentialType: credential, throwDelegateError: true)
+
+        do {
             try await sut.start {
-                exp.fulfill()
+                called = true
             }
-        }
-        
-        await fulfillment(of: [exp], timeout: 0.1)
-    }
-    
-    func test_action_is_not_performed_when_reauthentication_failes() async {
-        let exp = expectation(description: "waiting for reauth")
-        
-        exp.isInverted = true
-        
-        let linkedProviders = makeLinkedProviders()
-        let selectedCredential = makeEmailPasswordCredential()
-        let (sut, _) = makeSUT(linkedProviders: linkedProviders, credentialType: selectedCredential, throwDelegateError: true)
-        
-        try? await sut.start {
-            XCTFail("unexpeted completion call")
-        }
-        
-        await fulfillment(of: [exp], timeout: 0.1)
+        } catch {}
+
+        #expect(!called)
     }
 }
 
 
-// MARK: - SUT
-extension ReauthenticatorTests {
-    func makeSUT(linkedProviders: [AuthProvider] = [], credentialType: CredentialType? = nil, throwDelegateError: Bool = false, throwProviderError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> (sut: ReauthenticationManager, delegate: MockDelegate) {
+// MARK: - Helpers
+private extension ReauthenticatorTests {
+    func makeSUT(
+        linkedProviders: [AuthProvider] = [],
+        credentialType: CredentialType? = nil,
+        throwDelegateError: Bool = false,
+        throwProviderError: Bool = false
+    ) -> (sut: ReauthenticationManager, delegate: MockDelegate) {
         let delegate = MockDelegate(throwError: throwDelegateError, linkedProviders: linkedProviders)
         let provider = StubProvider(throwError: throwProviderError, credentialType: credentialType)
         let sut = ReauthenticationManager(delegate: delegate, credentialProvider: provider)
-        
-        trackForMemoryLeaks(sut, file: file, line: line)
-        
         return (sut, delegate)
+    }
+
+    func makeLinkedProviders(types: [AuthProviderType] = AuthProviderType.allCases) -> [AuthProvider] {
+        types.map { .init(linkedEmail: "linked@\($0.rawValue).com", type: $0) }
+    }
+
+    func makeEmailPasswordCredential(
+        email: String = "tester@gmail.com",
+        password: String = "tester"
+    ) -> CredentialType {
+        .emailPassword(email: email, password: password)
     }
 }
 
 
-// MARK: - Helper Classes
-extension ReauthenticatorTests {
-    class MockDelegate: ReauthenticationDelegate {
+// MARK: - Stubs
+private extension ReauthenticatorTests {
+    final class MockDelegate: ReauthenticationDelegate, @unchecked Sendable {
         private let throwError: Bool
         private let linkedProviders: [AuthProvider]
         private(set) var credentialType: CredentialType?
-        
+
         init(throwError: Bool, linkedProviders: [AuthProvider]) {
             self.throwError = throwError
             self.linkedProviders = linkedProviders
         }
-        
-        func loadLinkedProviders() -> [AuthProvider] {
-            return linkedProviders
-        }
-        
+
+        func loadLinkedProviders() -> [AuthProvider] { linkedProviders }
+
         func reauthenticate(with credientialType: CredentialType) async throws {
-            if throwError { throw NSError(domain: "Test", code: 0) }
-            
+            if throwError { throw TestError.reauth }
             self.credentialType = credientialType
         }
     }
-    
-    class StubProvider: CredentialReauthenticationProvider {
+
+    final class StubProvider: CredentialReauthenticationProvider {
         private let throwError: Bool
         private let credentialType: CredentialType?
-        
-        
+
         init(throwError: Bool, credentialType: CredentialType?) {
             self.throwError = throwError
             self.credentialType = credentialType
         }
-        
+
         func loadReauthCredential(linkedProviders: [AuthProvider]) async throws -> CredentialType? {
-            if throwError { throw NSError(domain: "Test", code: 0) }
-            
+            if throwError { throw TestError.network }
             return credentialType
         }
     }

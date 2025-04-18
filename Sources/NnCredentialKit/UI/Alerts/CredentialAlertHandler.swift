@@ -9,10 +9,10 @@ import UIKit
 import NnCredentialKitAccessibility
 
 /// A class responsible for handling credential-related alerts.
+@MainActor
 final class CredentialAlertHandler {
     /// Retrieves the top-most view controller in the current view hierarchy.
     /// - Returns: The top-most `UIViewController` if available, otherwise `nil`.
-    @MainActor
     func getTopVC() -> UIViewController? {
         return UIApplication.shared.getTopViewController()
     }
@@ -47,32 +47,30 @@ extension CredentialAlertHandler: CredentialAlerts {
     ///   - providers: A list of authentication providers to choose from.
     ///   - completion: A completion handler with the selected provider or `nil` if the user cancels.
     func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (AuthProvider?) -> Void) {
-        Task { @MainActor in
-            // Ensure that providers are not empty.
-            let hasMultipleProviders = providers.count > 1
-            let message = hasMultipleProviders ? "" : "This is a sensitive action. In order to proceed, you must reauthenticate your account."
-            let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
+        // Ensure that providers are not empty.
+        let hasMultipleProviders = providers.count > 1
+        let message = hasMultipleProviders ? "" : "This is a sensitive action. In order to proceed, you must reauthenticate your account."
+        let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
 
-            if hasMultipleProviders {
-                for provider in providers {
-                    let action = UIAlertAction(title: provider.name, style: .default) { _ in
-                        completion(provider)
-                    }
-                    alertController.addAction(action)
+        if hasMultipleProviders {
+            for provider in providers {
+                let action = UIAlertAction(title: provider.name, style: .default) { _ in
+                    completion(provider)
                 }
-            } else {
-                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    completion(providers.first)
-                }
-                alertController.addAction(okAction)
+                alertController.addAction(action)
             }
-
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                completion(nil)
+        } else {
+            let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+                completion(providers.first)
             }
-            alertController.addAction(cancelAction)
-            alertController.presentInMainThread()
+            alertController.addAction(okAction)
         }
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            completion(nil)
+        }
+        alertController.addAction(cancelAction)
+        alertController.presentOnTopVC()
     }
 }
 
@@ -84,23 +82,21 @@ private extension CredentialAlertHandler {
     ///   - message: The message to display in the alert.
     ///   - completion: A completion handler with the collected password or `nil` if the user cancels.
     func showPasswordAlert(_ message: String, completion: @escaping (String?) -> Void) {
-        Task { @MainActor in
-            let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
-            alertController.addTextField { textField in
-                textField.configureForPassword(isConfirm: false, accessId: .reauthPasswordField)
-            }
-            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                guard let password = alertController.textFields?[0].text, !password.isEmpty else {
-                    completion(nil)
-                    return
-                }
-                completion(password)
-            })
-            alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                completion(nil)
-            })
-            alertController.presentInMainThread()
+        let alertController = UIAlertController(title: "Re-Authenticate", message: message, preferredStyle: .alert)
+        alertController.addTextField { textField in
+            textField.configureForPassword(isConfirm: false, accessId: .reauthPasswordField)
         }
+        alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            guard let password = alertController.textFields?[0].text, !password.isEmpty else {
+                completion(nil)
+                return
+            }
+            completion(password)
+        })
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            completion(nil)
+        })
+        alertController.presentOnTopVC()
     }
 
     /// Shows an alert to collect email and password information for sign-up.
@@ -108,31 +104,29 @@ private extension CredentialAlertHandler {
     ///   - message: The message to display in the alert.
     ///   - completion: A completion handler with the collected `EmailSignUpInfo` or `nil` if the user cancels.
     func showEmailPasswordAlert(_ message: String, completion: @escaping (EmailSignUpInfo?) -> Void) {
-        Task { @MainActor in
-            let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-            alertController.addTextField { textField in
-                textField.configureForEmail()
-            }
-            alertController.addTextField { textField in
-                textField.configureForPassword(isConfirm: false, accessId: .passwordField)
-            }
-            alertController.addTextField { textField in
-                textField.configureForPassword(isConfirm: true, accessId: .confirmField)
-            }
-            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                if let email = alertController.textFields?[0].text,
-                   let password = alertController.textFields?[1].text,
-                   let confirmPassword = alertController.textFields?[2].text {
-                    completion(.init(email: email, password: password, confirm: confirmPassword))
-                } else {
-                    completion(nil)
-                }
-            })
-            alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                completion(nil)
-            })
-            alertController.presentInMainThread()
+        let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        alertController.addTextField { textField in
+            textField.configureForEmail()
         }
+        alertController.addTextField { textField in
+            textField.configureForPassword(isConfirm: false, accessId: .passwordField)
+        }
+        alertController.addTextField { textField in
+            textField.configureForPassword(isConfirm: true, accessId: .confirmField)
+        }
+        alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            if let email = alertController.textFields?[0].text,
+               let password = alertController.textFields?[1].text,
+               let confirmPassword = alertController.textFields?[2].text {
+                completion(.init(email: email, password: password, confirm: confirmPassword))
+            } else {
+                completion(nil)
+            }
+        })
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            completion(nil)
+        })
+        alertController.presentOnTopVC()
     }
 }
 
@@ -160,13 +154,12 @@ fileprivate extension UITextField {
     }
 }
 
-@MainActor
 fileprivate extension UIAlertController {
     /// Presents the alert controller on the main thread.
     /// - Parameters:
     ///   - animated: A Boolean value indicating whether the presentation is animated.
     ///   - completion: A completion handler to execute after the presentation finishes.
-    func presentInMainThread(animated: Bool = true, completion: (() -> Void)? = nil) {
+    func presentOnTopVC(animated: Bool = true, completion: (() -> Void)? = nil) {
         if var topController = UIApplication.shared.getTopViewController() {
             while let presentedViewController = topController.presentedViewController {
                 topController = presentedViewController

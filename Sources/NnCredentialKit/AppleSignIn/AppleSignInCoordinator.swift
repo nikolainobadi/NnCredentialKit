@@ -8,6 +8,7 @@
 import AuthenticationServices
 
 /// A coordinator responsible for managing the Apple Sign-In process.
+@MainActor
 public final class AppleSignInCoordinator: NSObject {
     private var currentNonce: String?
     private var completion: ((Result<AppleCredentialInfo?, Error>) -> Void)?

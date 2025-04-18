@@ -12,7 +12,7 @@ internal extension UIApplication {
     /// Retrieves the top-most view controller in the current window hierarchy.
     /// - Returns: The top-most `UIViewController` if available.
     func getTopViewController() -> UIViewController? {
-        return connectedScenes
+        var topController = connectedScenes
             .filter { $0.activationState == .foregroundActive }
             .map { $0 as? UIWindowScene }
             .compactMap { $0 }
@@ -21,5 +21,11 @@ internal extension UIApplication {
             .filter { $0.isKeyWindow }
             .first?
             .rootViewController
+        
+        while let presentedViewController = topController?.presentedViewController {
+            topController = presentedViewController
+        }
+        
+        return topController
     }
 }

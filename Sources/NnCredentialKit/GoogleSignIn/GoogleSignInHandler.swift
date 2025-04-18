@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import GoogleSignIn
+@preconcurrency import GoogleSignIn
 
 /// A handler for managing Google Sign-In operations.
 @MainActor

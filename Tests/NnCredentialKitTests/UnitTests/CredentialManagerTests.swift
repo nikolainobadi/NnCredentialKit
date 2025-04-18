@@ -5,235 +5,189 @@
 //  Created by Nikolai Nobadi on 8/3/24.
 //
 
-import XCTest
-import NnTestHelpers
+import Testing
 @testable import NnCredentialKit
 
-final class CredentialManagerTests: XCTestCase { }
-
-
-// MARK: - CredentialTypeProvider Tests
-extension CredentialManagerTests {
-    func test_returns_nil_when_user_cancels_sign_in() async {
-        for providerType in AuthProviderType.allCases {
-            let sut = makeSUT()
-            
-            await asyncAssertNoErrorThrown {
-                let result = try await sut.loadCredential(providerType)
-                
-                XCTAssertNil(result)
-            }
-        }
+@MainActor
+struct CredentialManagerTests {
+    @Test("Returns nil when user cancels sign-in", arguments: AuthProviderType.allCases)
+    func returnsNilOnUserCancel(providerType: AuthProviderType) async throws {
+        let sut = makeSUT()
+        let result = try await sut.loadCredential(providerType)
+        
+        #expect(result == nil)
     }
-    
-    func test_loads_apple_credential_for_apple_auth_type_provider() async {
+
+    @Test("Loads Apple credential for .apple")
+    func loadsAppleCredential() async throws {
         let credential = makeAppleCredential()
         let sut = makeSUT(appleCredential: credential)
-        
-        await asyncAssertNoErrorThrown {
-            let result = try await sut.loadCredential(.apple)
-            
-            switch result {
-            case .apple:
-               break
-            default:
-                XCTFail("unexpected credential")
-            }
-        }
+        let result = try #require(try await sut.loadCredential(.apple))
+
+        #expect(result.id == CredentialType.apple(.init(email: nil, displayName: nil, idTokenString: "", nonce: "")).id)
     }
-    
-    func test_loads_google_credential_for_google_auth_type_provider() async {
+
+    @Test("Loads Google credential for .google")
+    func loadsGoogleCredential() async throws {
         let credential = makeGoogleCredential()
         let sut = makeSUT(googleCredential: credential)
-        
-        await asyncAssertNoErrorThrown {
-            let result = try await sut.loadCredential(.google)
-            
-            switch result {
-            case .google:
-               break
-            default:
-                XCTFail("unexpected credential")
-            }
-        }
+        let result = try #require(try await sut.loadCredential(.google))
+
+        #expect(result.id == CredentialType.google(makeGoogleCredential()).id)
     }
-    
-    func test_loads_email_password_credential_for_email_password_auth_type_provider() async {
+
+    @Test("Loads email credential for .emailPassword")
+    func loadsEmailCredential() async throws {
         let info = makeEmailInfo()
         let sut = makeSUT(info: info)
-        
-        await asyncAssertNoErrorThrown {
-            let result = try await sut.loadCredential(.emailPassword)
-            
-            switch result {
-            case .emailPassword:
-               break
-            default:
-                XCTFail("unexpected credential")
-            }
-        }
-    }
-    
-    func test_throws_error_for_email_credential_when_passwords_do_not_match() async {
-        let info = makeEmailInfo(password: "tester", confirm: "123456")
-        let sut = makeSUT(info: info)
-        
-        await asyncAssertThrownError(expectedError: CredentialError.passwordsMustMatch) {
-            let _ = try await sut.loadCredential(.emailPassword)
-        }
-    }
-}
+        let result = try #require(try await sut.loadCredential(.emailPassword))
 
+        #expect(result.id == CredentialType.emailPassword(email: info.email, password: info.password).id)
+    }
 
-// MARK: - CredentialReauthenticationProvider Tests
-extension CredentialManagerTests {
-    func test_returns_nil_reauthentication_credential_when_user_cancels() async {
-        let linkedProviders = makeLinkedProviders()
-        for providerType in AuthProviderType.allCases {
-            let sut = makeSUT(selectedProvider: .init(linkedEmail: "", type: providerType))
-            
-            await asyncAssertNoErrorThrown {
-                let result = try await sut.loadReauthCredential(linkedProviders: linkedProviders)
-                
-                XCTAssertNil(result)
-            }
+    @Test("Throws if email password confirm does not match")
+    func throwsWhenPasswordsDoNotMatch() async {
+        let sut = makeSUT(info: makeEmailInfo(password: "one", confirm: "two"))
+
+        await #expect(throws: CredentialError.passwordsMustMatch) {
+            _ = try await sut.loadCredential(.emailPassword)
         }
     }
-    
-    func test_throws_error_during_reauthentication_if_no_linked_providers_exist() async {
+
+    @Test("Returns nil on reauthentication cancel")
+    func returnsNilOnReauthCancel() async throws {
+        let linked = makeLinkedProviders()
+        for type in AuthProviderType.allCases {
+            let sut = makeSUT(selectedProvider: .init(linkedEmail: "", type: type))
+            let result = try await sut.loadReauthCredential(linkedProviders: linked)
+            #expect(result == nil)
+        }
+    }
+
+    @Test("Throws when no linked providers exist")
+    func throwsWhenNoLinkedProviders() async {
         let sut = makeSUT()
-        
-        await asyncAssertThrownError(expectedError: CredentialError.emptyAuthProviders) {
-            let _ = try await sut.loadReauthCredential(linkedProviders: [])
+        await #expect(throws: CredentialError.emptyAuthProviders) {
+            _ = try await sut.loadReauthCredential(linkedProviders: [])
         }
     }
-    
-    func test_loads_apple_credential_for_reauthentication_when_apple_auth_type_provider_is_selected() async {
-        let credential = makeAppleCredential()
-        let linkedProviders = makeLinkedProviders()
-        let selectedProvider = makeAuthProvider(.apple)
-        let sut = makeSUT(selectedProvider: selectedProvider, appleCredential: credential)
-        
-        await asyncAssertNoErrorThrown {
-            let result = try await sut.loadReauthCredential(linkedProviders: linkedProviders)
-            
-            switch result {
-            case .apple:
-               break
-            default:
-                XCTFail("unexpected credential")
-            }
-        }
+
+    @Test("Loads Apple credential on reauth")
+    func loadsAppleOnReauth() async throws {
+        let linked = makeLinkedProviders()
+        let selected = makeAuthProvider(.apple)
+        let sut = makeSUT(selectedProvider: selected, appleCredential: makeAppleCredential())
+        let result = try #require(try await sut.loadReauthCredential(linkedProviders: linked))
+
+        #expect(result.id == CredentialType.apple(makeAppleCredential()).id)
     }
-    
-    func test_loads_google_credential_for_reauthentication_when_google_auth_type_provider_is_selected() async {
-        let credential = makeGoogleCredential()
-        let linkedProviders = makeLinkedProviders()
-        let selectedProvider = makeAuthProvider(.google)
-        let sut = makeSUT(selectedProvider: selectedProvider, googleCredential: credential)
-        
-        await asyncAssertNoErrorThrown {
-            let result = try await sut.loadReauthCredential(linkedProviders: linkedProviders)
-            
-            switch result {
-            case .google:
-               break
-            default:
-                XCTFail("unexpected credential")
-            }
-        }
+
+    @Test("Loads Google credential on reauth")
+    func loadsGoogleOnReauth() async throws {
+        let linked = makeLinkedProviders()
+        let selected = makeAuthProvider(.google)
+        let sut = makeSUT(selectedProvider: selected, googleCredential: makeGoogleCredential())
+        let result = try #require(try await sut.loadReauthCredential(linkedProviders: linked))
+
+        #expect(result.id == CredentialType.google(makeGoogleCredential()).id)
     }
-    
-    func test_loads_email_password_credential_for_reauthentication_when_email_password_auth_type_provider_is_selected() async {
-        let linkedProviders = makeLinkedProviders()
-        let selectedProvider = makeAuthProvider(.emailPassword)
-        let sut = makeSUT(password: "tester", selectedProvider: selectedProvider)
-        
-        await asyncAssertNoErrorThrown {
-            let result = try await sut.loadReauthCredential(linkedProviders: linkedProviders)
-            
-            switch result {
-            case .emailPassword:
-               break
-            default:
-                XCTFail("unexpected credential")
-            }
-        }
+
+    @Test("Loads email credential on reauth")
+    func loadsEmailOnReauth() async throws {
+        let linked = makeLinkedProviders()
+        let selected = makeAuthProvider(.emailPassword)
+        let info = makeEmailInfo()
+        let sut = makeSUT(password: info.password, selectedProvider: selected)
+        let result = try #require(try await sut.loadReauthCredential(linkedProviders: linked))
+
+        #expect(result.id == CredentialType.emailPassword(email: info.email, password: info.password).id)
     }
 }
 
 
-// MARK: - SUT
-extension CredentialManagerTests {
-    func makeSUT(info: EmailSignUpInfo? = nil, password: String? = nil, selectedProvider: AuthProvider? = nil, appleCredential: AppleCredentialInfo? = nil, googleCredential: GoogleCredentialInfo? = nil, throwProviderError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> CredentialManager {
+// MARK: - Helpers
+private extension CredentialManagerTests {
+    func makeSUT(
+        info: EmailSignUpInfo? = nil,
+        password: String? = nil,
+        selectedProvider: AuthProvider? = nil,
+        appleCredential: AppleCredentialInfo? = nil,
+        googleCredential: GoogleCredentialInfo? = nil,
+        throwProviderError: Bool = false
+    ) -> CredentialManager {
         let alerts = StubAlerts(info: info, password: password, selectedProvider: selectedProvider)
-        let provider = StubProvider(throwError: throwProviderError, appleCredential: appleCredential, googleCredential: googleCredential)
-        let sut = CredentialManager(alertHandler: alerts, socialCredentialProvider: provider)
-        
-        trackForMemoryLeaks(sut, file: file, line: line)
-        
-        return sut
+        let provider = StubProvider(
+            throwError: throwProviderError,
+            appleCredential: appleCredential,
+            googleCredential: googleCredential
+        )
+        return CredentialManager(alertHandler: alerts, socialCredentialProvider: provider)
     }
-    
+
     func makeAppleCredential() -> AppleCredentialInfo {
-        return .init(email: "", displayName: "", idTokenString: "", nonce: "")
+        .init(email: "", displayName: "", idTokenString: "", nonce: "")
     }
-    
+
     func makeGoogleCredential() -> GoogleCredentialInfo {
-        return .init(email: "", displayName: "", tokenId: "", accessTokenId: "")
+        .init(email: "", displayName: "", tokenId: "", accessTokenId: "")
     }
-    
-    func makeEmailInfo(email: String = "tester@gmail.com", password: String = "tester", confirm: String? = nil) -> EmailSignUpInfo {
-        return .init(email: email, password: password, confirm: confirm ?? password)
+
+    func makeEmailInfo(
+        email: String = "tester@gmail.com",
+        password: String = "tester",
+        confirm: String? = nil
+    ) -> EmailSignUpInfo {
+        .init(email: email, password: password, confirm: confirm ?? password)
+    }
+
+    func makeLinkedProviders(types: [AuthProviderType] = AuthProviderType.allCases) -> [AuthProvider] {
+        types.map { makeAuthProvider($0, email: "linked@\($0.rawValue).com") }
+    }
+
+    func makeAuthProvider(_ type: AuthProviderType, email: String = "") -> AuthProvider {
+        .init(linkedEmail: email, type: type)
     }
 }
 
 
-// MARK: - Helper Classes
-extension CredentialManagerTests {
-    class StubAlerts: CredentialAlerts {
+// MARK: - Stubs
+private extension CredentialManagerTests {
+    final class StubAlerts: CredentialAlerts {
         private let info: EmailSignUpInfo?
         private let password: String?
         private let selectedProvider: AuthProvider?
-        
+
         init(info: EmailSignUpInfo?, password: String?, selectedProvider: AuthProvider?) {
             self.info = info
             self.password = password
             self.selectedProvider = selectedProvider
         }
-        
-        func loadEmailSignUpInfo() async -> EmailSignUpInfo? {
-            return info
-        }
-        
-        func loadPassword(_ message: String) async -> String? {
-            return password
-        }
-        
+
+        func loadEmailSignUpInfo() async -> EmailSignUpInfo? { info }
+        func loadPassword(_ message: String) async -> String? { password }
         func showReauthenticationAlert(providers: [AuthProvider], completion: @escaping (AuthProvider?) -> Void) {
             completion(selectedProvider)
         }
     }
-    class StubProvider: SocialCredentialProvider {
+
+    final class StubProvider: SocialCredentialProvider {
         private let throwError: Bool
         private let appleCredential: AppleCredentialInfo?
         private let googleCredential: GoogleCredentialInfo?
-        
+
         init(throwError: Bool, appleCredential: AppleCredentialInfo?, googleCredential: GoogleCredentialInfo?) {
             self.throwError = throwError
             self.appleCredential = appleCredential
             self.googleCredential = googleCredential
         }
-        
+
         func loadAppleCredential() async throws -> AppleCredentialInfo? {
-            if throwError { throw NSError(domain: "Test", code: 0) }
-            
+            if throwError { throw TestError.network }
             return appleCredential
         }
-        
+
         func loadGoogleCredential() async throws -> GoogleCredentialInfo? {
-            if throwError { throw NSError(domain: "Test", code: 0) }
-            
+            if throwError { throw TestError.network }
             return googleCredential
         }
     }

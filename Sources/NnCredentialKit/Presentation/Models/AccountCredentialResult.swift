@@ -6,7 +6,7 @@
 //
 
 /// An enum representing the result of an account credential operation.
-public enum AccountCredentialResult {
+public enum AccountCredentialResult: Sendable {
     /// The operation was successful.
     case success
     

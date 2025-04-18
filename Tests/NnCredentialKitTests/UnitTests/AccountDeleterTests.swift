@@ -5,76 +5,68 @@
 //  Created by Nikolai Nobadi on 8/2/24.
 //
 
-import XCTest
-import NnTestHelpers
+import Testing
 @testable import NnCredentialKit
 
-final class AccountDeleterTests: XCTestCase {
-    func test_error_is_thrown_when_delete_account_fails() async {
+@MainActor
+struct AccountDeleterTests {
+    @Test("Throws error when delete account fails")
+    func throwsErrorOnDeleteAccountFail() async throws {
         let error = TestError.network
         let sut = makeSUT(firstResult: .failure(error))
-        
-        await asyncAssertThrownError(expectedError: error, action: sut.deleteAccount)
+
+        await #expect(throws: TestError.network) {
+            try await sut.deleteAccount()
+        }
     }
-    
-    func test_attempts_delete_account_after_successful_reauthentication() async {
+
+    @Test("Throws error after successful reauthentication attempt")
+    func throwsErrorAfterSuccessfulReauth() async throws {
         let error = TestError.postReauthorizationAction
         let sut = makeSUT(firstResult: .reauthRequired, secondResult: .failure(error))
-        
-        await asyncAssertThrownError(expectedError: error, action: sut.deleteAccount)
+
+        await #expect(throws: TestError.postReauthorizationAction) {
+            try await sut.deleteAccount()
+        }
     }
-    
-    func test_does_not_attempt_delete_account_when_reauthentication_fails() async {
+
+    @Test("Throws error when reauthentication fails")
+    func throwsErrorWhenReauthenticationFails() async throws {
         let sut = makeSUT(firstResult: .reauthRequired, secondResult: .failure(TestError.network), throwReauthError: true)
-        
-        await asyncAssertThrownError(expectedError: TestError.reauth, action: sut.deleteAccount)
+
+        await #expect(throws: TestError.reauth) {
+            try await sut.deleteAccount()
+        }
     }
 }
 
 
 // MARK: - SUT
-extension AccountDeleterTests {
-    func makeSUT(firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwReauthError: Bool = false, file: StaticString = #filePath, line: UInt = #line) -> AccountDeleter {
+private extension AccountDeleterTests {
+    func makeSUT(firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwReauthError: Bool = false) -> AccountDeleter {
         let delegate = StubDelegate(firstResult: firstResult, secondResult: secondResult)
         let auth = MockReauthenticator(throwError: throwReauthError)
-        let sut = AccountDeleter(delegate: delegate, reauthenticator: auth)
         
-        trackForMemoryLeaks(sut, file: file, line: line)
-        
-        return sut
+        return AccountDeleter(delegate: delegate, reauthenticator: auth)
     }
 }
 
 
 // MARK: - Helper Classes
-extension AccountDeleterTests {
-    class StubDelegate: DeleteAccountDelegate {
+private extension AccountDeleterTests {
+    final class StubDelegate: DeleteAccountDelegate, @unchecked Sendable {
         private let store: StubResultStore
-        
+
         init(firstResult: AccountCredentialResult, secondResult: AccountCredentialResult) {
-            self.store = .init(firstResult: firstResult, secondResult: secondResult)
+            self.store = StubResultStore(firstResult: firstResult, secondResult: secondResult)
         }
-        
+
         func deleteAccount() async -> AccountCredentialResult {
-            return store.getResult()
+            store.getResult()
         }
 
-        // MARK: - Unused
         func loadLinkedProviders() -> [AuthProvider] { [] }
-        func reauthenticate(with credientialType: CredentialType) async throws { }
-    }
-}
 
-final class MockReauthenticator: Reauthenticator {
-    private let throwError: Bool
-    
-    init(throwError: Bool) {
-        self.throwError = throwError
-    }
-    
-    func start(actionAfterReauth: @escaping () async throws -> Void) async throws {
-        if throwError { throw TestError.reauth }
-        
-        try await actionAfterReauth()
+        func reauthenticate(with credientialType: CredentialType) async throws { }
     }
 }
