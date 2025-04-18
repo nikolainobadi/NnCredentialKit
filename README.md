@@ -1,5 +1,7 @@
 # NnCredentialKit
 
+
+![Unit Tests](https://github.com/nikolainobadi/NnCredentialKit/actions/workflows/ci.yml/badge.svg)
 ![Swift](https://badgen.net/badge/swift/6.0%2B/purple)
 ![Platform](https://badgen.net/badge/platform/iOS%2016+/blue)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
