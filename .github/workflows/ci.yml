@@ -35,9 +35,6 @@ jobs:
       - name: Install xcpretty
         run: gem install xcpretty
 
-      - name: Build
-        run: swift build
-
       - name: Run Tests on iPhone 16
         run: |
           xcodebuild \
