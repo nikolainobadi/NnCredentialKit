@@ -49,9 +49,7 @@ To integrate `NnCredentialKit` into your Xcode project using Swift Package Manag
 If you are using `NnCredentialKit` in another Swift package, add it to your `Package.swift` dependencies:
 
 ```swift
-dependencies: [
-    .package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "3.0.0")
-]
+.package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "3.0.0")
 ```
 
 Then, in the target you want to use `NnCredentialKit`, add it to the list of dependencies:
@@ -60,7 +58,8 @@ Then, in the target you want to use `NnCredentialKit`, add it to the list of dep
 .target(
     name: "YourTargetName",
     dependencies: [
-        "NnCredentialKit"
+        .product(name: "NnCredentialKit", package: "NnCredentialKit"),
+        .product(name: "NnCredentialKitAccessibility", package: "NnCredentialKit") // optional for access to accessibility identifiers
     ]
 )
 ```
