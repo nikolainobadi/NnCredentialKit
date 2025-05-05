@@ -1,13 +1,14 @@
-### Swift ###
 # Xcode
-#
 .DS_Store
 
 ## Build generated
 build/
-.build/
 DerivedData/
 .swiftpm/
+
+# Swift Package Manager
+Package.resolved
+.build/
 
 ## Various settings
 *.pbxuser
