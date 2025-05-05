@@ -85,7 +85,30 @@ let appleCredentialInfo = try await socialManager.loadAppleCredential()
 let googleCredentialInfo = try await socialManager.loadGoogleCredential()
 ```
 
-The top-most `UIViewController` will be used automatically during Google Sign-In.
+The top-most `UIViewController` will be used automatically during **Google Sign-In**. The method to retrieve it is below:
+
+```swift
+extension UIApplication {
+    func getTopViewController() -> UIViewController? {
+        var topController = connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .map { $0 as? UIWindowScene }
+            .compactMap { $0 }
+            .first?
+            .windows
+            .filter { $0.isKeyWindow }
+            .first?
+            .rootViewController
+        
+        // ensures any presented views will be treated as 'top-most' viewController
+        while let presentedViewController = topController?.presentedViewController {
+            topController = presentedViewController
+        }
+        
+        return topController
+    }
+}
+```
 
 ### Account Linking
 
