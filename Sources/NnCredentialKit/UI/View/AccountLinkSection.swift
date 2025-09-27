@@ -11,7 +11,7 @@ import NnCredentialKitAccessibility
 
 /// A view that displays a section for managing account link/unlink operations.
 public struct AccountLinkSection<LinkButton: View>: View {
-    @StateObject var viewModel: AccountLinkViewModel
+    @StateObject private var viewModel: AccountLinkViewModel
     
     /// The configuration for customizing the colors in the section.
     let config: AccountLinkSectionColorsConfig
@@ -59,9 +59,10 @@ public struct AccountLinkSection<LinkButton: View>: View {
 }
 
 
+#if DEBUG
 // MARK: - Preview
 #Preview {
-    class PreviewDelegate: AccountLinkDelegate, @unchecked Sendable {
+    final class PreviewDelegate: AccountLinkDelegate, @unchecked Sendable {
         func loadLinkedProviders() -> [AuthProvider] { [] }
         func loadSupportedProviders() -> [AuthProvider] { [] }
         func reauthenticate(with credientialType: CredentialType) async throws { }
@@ -77,3 +78,4 @@ public struct AccountLinkSection<LinkButton: View>: View {
         }
     }
 }
+#endif
