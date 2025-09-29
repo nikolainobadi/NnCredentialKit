@@ -61,6 +61,19 @@ struct AppleSignInCoordinatorTests {
             _ = try await sut.createAppleTokenInfo()
         }
     }
+    
+    @Test("Returns token info with email and full name from credential")
+    func returnsTokenInfoWithEmailAndFullNameFromCredential() async throws {
+        let email = "tester@gmail.com"
+        let firstName = "mr"
+        let lastName = "sir"
+        let raw = makeRawCredential(email: email, firstName: firstName, lastName: lastName, idTokenData: .init())
+        let sut = makeSUT(result: .success(raw)).sut
+        let result = try #require(try await sut.createAppleTokenInfo())
+        
+        #expect(result.email == email)
+        #expect(result.displayName == "\(firstName) \(lastName)")
+    }
 }
 
 
@@ -72,6 +85,10 @@ private extension AppleSignInCoordinatorTests {
         let sut = AppleSignInCoordinator(session: session, provider: provider, converter: AppleCredentialConverter())
         
         return (sut, session)
+    }
+    
+    func makeRawCredential(email: String? = nil, firstName: String? = nil, lastName: String? = nil, idTokenData: Data? = nil) -> AppleAuthRawCredential {
+        return .init(email: email, fullName: .init(givenName: firstName, familyName: lastName), idTokenData: idTokenData)
     }
 
     static func makeCanceledNSError() -> NSError {
