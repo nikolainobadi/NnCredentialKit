@@ -8,33 +8,79 @@ NnCredentialKit is a Swift Package that provides comprehensive authentication wo
 
 ## Architecture
 
-### Core Structure
-- **Two main targets**: `NnCredentialKit` (main library) and `NnCredentialKitAccessibility` (accessibility identifiers)
-- **Layered architecture**: UI → Presentation → Domain → External services
-- **Delegate pattern**: Uses protocol-based delegates for extensibility and testability
+### Folder Structure
+The package follows a feature-based, domain-driven architecture:
+
+```
+Sources/NnCredentialKit/
+├── Core/                              # Domain layer - pure business logic
+│   ├── Models/                        # Domain models
+│   │   ├── CredentialType.swift
+│   │   ├── AuthProvider.swift
+│   │   ├── AccountCredentialResult.swift
+│   │   └── EmailSignUpInfo.swift
+│   ├── Protocols/                     # Core protocols & delegates
+│   │   ├── PublicDelegates.swift     # Public API protocols
+│   │   └── InternalDelegates.swift   # Internal protocols
+│   └── Errors/
+│       └── CredentialError.swift
+│
+├── Features/                          # Feature-based organization
+│   ├── Authentication/                # Core auth workflows
+│   │   ├── Managers/
+│   │   │   ├── CredentialManager.swift
+│   │   │   ├── SocialCredentialManager.swift
+│   │   │   └── ReauthenticationManager.swift
+│   │   └── Services/
+│   │       └── AccountDeleter.swift
+│   │
+│   ├── AccountLinking/                # Account linking feature
+│   │   ├── ViewModels/
+│   │   │   └── AccountLinkViewModel.swift
+│   │   ├── Views/
+│   │   │   └── AccountLinkSection.swift
+│   │   ├── Configuration/
+│   │   │   └── AccountLinkSectionColorsConfig.swift
+│   │   └── Extensions/
+│   │
+│   └── Reauthentication/              # Reauthentication feature
+│       ├── Alerts/
+│       │   └── CredentialAlertHandler.swift
+│       └── Extensions/
+│
+├── Providers/                         # External provider integrations
+│   ├── Apple/                         # Apple Sign-In
+│   │   ├── Models/
+│   │   ├── Services/
+│   │   └── Errors/
+│   └── Google/                        # Google Sign-In
+│       ├── Models/
+│       └── Services/
+│
+└── Infrastructure/                    # Cross-cutting concerns
+    ├── Extensions/
+    └── Resources/
+```
 
 ### Key Components
 
-**Presentation Layer:**
-- `SocialCredentialManager`: Handles Apple and Google sign-in flows
-- `CredentialManager`: Main coordinator for credential operations
-- `ReauthenticationManager`: Manages reauthentication workflows
-- `AccountDeleter`: Handles account deletion with reauthentication
-- `AccountLinkViewModel`: SwiftUI ViewModel for account linking UI
+**Core Layer:**
+- Domain models: `CredentialType`, `AuthProvider`, `AccountCredentialResult`
+- Public protocols: `AccountLinkDelegate`, `ReauthenticationDelegate`, `DeleteAccountDelegate`
+- Domain errors: `CredentialError`
 
-**Domain Models:**
-- `AccountCredentialResult`: Result enum with `.success`, `.reauthRequired`, `.failure(Error)`
-- `CredentialType`: Enum for Apple, Google, and email/password credentials
-- `AuthProvider`: Represents authentication providers with linked status
+**Features Layer:**
+- **Authentication**: `CredentialManager`, `SocialCredentialManager`, `ReauthenticationManager`
+- **Account Linking**: `AccountLinkViewModel`, `AccountLinkSection` view
+- **Reauthentication**: `CredentialAlertHandler`, reauth extensions
 
-**UI Components:**
-- `AccountLinkSection`: SwiftUI view for displaying and managing linked accounts
-- `CredentialAlertHandler`: Handles reauthentication alerts
+**Providers Layer:**
+- **Apple**: `AppleSignInCoordinator`, `AppleCredentialInfo`, nonce handling
+- **Google**: `GoogleSignInHandler`, `GoogleCredentialInfo`
 
-**External Integration:**
-- `GoogleSignInHandler`: Wrapper for Google Sign-In SDK
-- `AppleSignInCoordinator`: Coordinates Apple Sign-In flow
-- Firebase-aware error handling for `.requiresRecentLogin` scenarios
+**Infrastructure Layer:**
+- Platform extensions: `UIApplication+Extensions`
+- Resources: Image assets for provider logos
 
 ### Key Patterns
 
@@ -51,22 +97,23 @@ The package automatically handles Firebase's `.requiresRecentLogin` errors by:
 
 ## Development Commands
 
-### Building and Testing
+**IMPORTANT**: This is an iOS-only package. Build and test commands should only be run when specifically requested by the user. Do not automatically run builds or tests after making changes.
+
+### Building and Testing (iOS Only - Run Only When Requested)
 ```bash
-# Build the package
+# Build the package (iOS-only, will fail on macOS due to iOS dependencies)
+# Only run when user explicitly asks to build
 swift build
 
-# Run all tests
-swift test
-
-# Run tests with iOS Simulator (from Xcode)
+# Run tests with iOS Simulator (requires Xcode)
+# Only run when user explicitly asks to test
 xcodebuild -scheme NnCredentialKit -destination 'platform=iOS Simulator,name=iPhone 16' test
 
-# Build for iOS target
+# Build for release
 swift build -c release
 ```
 
-### Running Single Tests
+### Running Single Tests (Only When Requested)
 ```bash
 # Run a specific test file
 swift test --filter AccountLinkViewModelTests
@@ -74,6 +121,8 @@ swift test --filter AccountLinkViewModelTests
 # Run a specific test method (use test description)
 swift test --filter "Links account when provider is not linked"
 ```
+
+**Note**: Due to iOS-specific dependencies (UIKit, AuthenticationServices), standard `swift build` and `swift test` commands may fail on macOS. Use Xcode or iOS Simulator for proper testing.
 
 ## Testing Architecture
 

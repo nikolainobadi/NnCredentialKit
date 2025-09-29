@@ -29,7 +29,7 @@ let package = Package(
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS")
             ],
             resources: [
-                .process("Resources/Media.xcassets")
+                .process("Infrastructure/Resources/Media.xcassets")
             ]
         ),
         .target(
