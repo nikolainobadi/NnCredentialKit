@@ -15,4 +15,6 @@ public enum AppleSignInError: Error {
     
     /// Unable to serialize the identity token.
     case unableToSerializeToken
+    
+    case canceled
 }

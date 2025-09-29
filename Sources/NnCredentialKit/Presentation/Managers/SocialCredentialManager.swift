@@ -26,7 +26,7 @@ extension SocialCredentialManager: SocialCredentialProvider {
     /// Loads the Apple credential for authentication.
     /// - Returns: The loaded `AppleCredentialInfo` or `nil` if the operation fails.
     public func loadAppleCredential() async throws -> AppleCredentialInfo? {
-        try await AppleSignInCoordinator().createAppleTokenInfo(requestedScopes: appleSignInScopes)
+        return try await AppleSignInCoordinator().createAppleTokenInfo(requestedScopes: appleSignInScopes)
     }
     
     /// Loads the Google credential for authentication.
