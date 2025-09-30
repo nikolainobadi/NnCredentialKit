@@ -19,7 +19,6 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/nikolainobadi/NnTestKit", from: "1.0.0"),
         .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "8.0.0"),
     ],
     targets: [
@@ -30,7 +29,7 @@ let package = Package(
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS")
             ],
             resources: [
-                .process("Resources/Media.xcassets")
+                .process("Infrastructure/Resources/Media.xcassets")
             ]
         ),
         .target(
@@ -39,8 +38,7 @@ let package = Package(
         .testTarget(
             name: "NnCredentialKitTests",
             dependencies: [
-                "NnCredentialKit",
-                .product(name: "NnTestHelpers", package: "NnTestKit")
+                "NnCredentialKit"
             ]
         ),
     ]

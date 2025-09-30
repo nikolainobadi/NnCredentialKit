@@ -36,9 +36,12 @@ extension AuthProvider {
     /// The name of the provider, based on its type.
     var name: String {
         switch type {
-        case .apple: return "Apple ID"
-        case .google: return "Google Account"
-        case .emailPassword: return "Email Address"
+        case .apple: 
+            return "Apple ID"
+        case .google: 
+            return "Google Account"
+        case .emailPassword: 
+            return "Email Address"
         }
     }
 }

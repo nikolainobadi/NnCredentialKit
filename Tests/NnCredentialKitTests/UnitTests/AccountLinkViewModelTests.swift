@@ -1,7 +1,6 @@
 // AccountLinkViewModelTests.swift
 
 import Testing
-import NnTestHelpers
 @testable import NnCredentialKit
 
 @MainActor
@@ -100,13 +99,58 @@ struct AccountLinkViewModelTests {
 }
 
 
+// MARK: - Button Display Tests
+extension AccountLinkViewModelTests {
+    @Test("Shows button when prevent flag disabled")
+    func showsButtonWhenPreventFlagDisabled() {
+        let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
+        let (sut, _) = makeSUT(providers: [provider], preventUnlinkingLastProvider: false)
+
+        #expect(sut.shouldShowButton(for: provider))
+    }
+
+    @Test("Shows button for unlinked provider when prevent flag enabled")
+    func showsButtonForUnlinkedProviderWhenPreventFlagEnabled() {
+        let provider = makeAuthProvider(.emailPassword)
+        let (sut, _) = makeSUT(providers: [provider], preventUnlinkingLastProvider: true)
+
+        #expect(sut.shouldShowButton(for: provider))
+    }
+
+    @Test("Shows button for linked provider when multiple providers linked and prevent flag enabled")
+    func showsButtonForLinkedProviderWhenMultipleProvidersLinkedAndPreventFlagEnabled() {
+        let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
+        let secondProvider = makeAuthProvider(.apple, email: "tester@apple.com")
+        let (sut, _) = makeSUT(providers: [provider, secondProvider], preventUnlinkingLastProvider: true)
+
+        #expect(sut.shouldShowButton(for: provider))
+    }
+
+    @Test("Hides button for linked provider when only provider linked and prevent flag enabled")
+    func hidesButtonForLinkedProviderWhenOnlyProviderLinkedAndPreventFlagEnabled() {
+        let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
+        let (sut, _) = makeSUT(providers: [provider], preventUnlinkingLastProvider: true)
+
+        #expect(!sut.shouldShowButton(for: provider))
+    }
+
+    @Test("Shows button for linked provider when only provider linked and prevent flag disabled")
+    func showsButtonForLinkedProviderWhenOnlyProviderLinkedAndPreventFlagDisabled() {
+        let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
+        let (sut, _) = makeSUT(providers: [provider], preventUnlinkingLastProvider: false)
+
+        #expect(sut.shouldShowButton(for: provider))
+    }
+}
+
+
 // MARK: - SUT
 private extension AccountLinkViewModelTests {
-    func makeSUT(providers: [AuthProvider] = [], credentialType: CredentialType? = nil, firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwProviderError: Bool = false, throwReauthError: Bool = false) -> (sut: AccountLinkViewModel, delegate: MockDelegate) {
+    func makeSUT(providers: [AuthProvider] = [], credentialType: CredentialType? = nil, firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwProviderError: Bool = false, throwReauthError: Bool = false, preventUnlinkingLastProvider: Bool = false) -> (sut: AccountLinkViewModel, delegate: MockDelegate) {
         let delegate = MockDelegate(firstResult: firstResult, secondResult: secondResult, supportedProviders: providers)
         let auth = MockReauthenticator(throwError: throwReauthError)
         let provider = StubProvider(credentialType: credentialType, throwError: throwProviderError)
-        let sut = AccountLinkViewModel(providers: providers, delegate: delegate, reauthenticator: auth, credentialProvider: provider)
+        let sut = AccountLinkViewModel(providers: providers, delegate: delegate, reauthenticator: auth, credentialProvider: provider, preventUnlinkingLastProvider: preventUnlinkingLastProvider)
 
         return (sut, delegate)
     }

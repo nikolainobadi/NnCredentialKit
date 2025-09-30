@@ -1,5 +1,5 @@
 //
-//  ReauthenticatorTests.swift
+//  ReauthenticationManagerTests.swift
 //
 //
 //  Created by Nikolai Nobadi on 8/2/24.
@@ -9,7 +9,7 @@ import Testing
 @testable import NnCredentialKit
 
 @MainActor
-struct ReauthenticatorTests {
+struct ReauthenticationManagerTests {
     @Test("Throws if no linked providers exist")
     func throwsIfNoLinkedProvidersExist() async {
         let sut = makeSUT().sut
@@ -73,7 +73,7 @@ struct ReauthenticatorTests {
 
 
 // MARK: - Helpers
-private extension ReauthenticatorTests {
+private extension ReauthenticationManagerTests {
     func makeSUT(
         linkedProviders: [AuthProvider] = [],
         credentialType: CredentialType? = nil,
@@ -100,7 +100,7 @@ private extension ReauthenticatorTests {
 
 
 // MARK: - Stubs
-private extension ReauthenticatorTests {
+private extension ReauthenticationManagerTests {
     final class MockDelegate: ReauthenticationDelegate, @unchecked Sendable {
         private let throwError: Bool
         private let linkedProviders: [AuthProvider]

@@ -70,11 +70,11 @@ Then, in the target you want to use `NnCredentialKit`, add it to the list of dep
 
 ### Social Sign-In
 
-`GoogleSignInHandler` and `AppleSignInCoordinator` help manage Google and Apple sign-ins.
+`GoogleSignInService` and `AppleSignInService` help manage Google and Apple sign-ins.
 
 ```swift
-let appleCredentialInfo = try await AppleSignInCoordinator().createAppleTokenInfo()
-let googleCredentialInfo = try await GoogleSignInHandler.signIn(rootVC: viewController)
+let appleCredentialInfo = try await AppleSignInService().createAppleTokenInfo()
+let googleCredentialInfo = try await GoogleSignInService.signIn(rootVC: viewController)
 ```
 
 Alternatively, you can use `SocialCredentialManager` to handle both operations:
@@ -120,13 +120,26 @@ import NnCredentialKit
 struct ContentView: View {
     var body: some View {
         AccountLinkSection(
-            config: .init(providerNameColor: .primary, emailColor: .secondary, linkButtonColor: .blue),
+            config: .init(providerNameColor: .primary, emailColor: .secondary),
             delegate: YourAccountLinkDelegate(),
-            appleSignInScopes: [.email, .fullName]
-        )
+            appleSignInScopes: [.email, .fullName],
+            preventUnlinkingLastProvider: true
+        ) { delegate in
+            Button(delegate.buttonText) {
+                Task {
+                    try? await delegate.linkAction()
+                }
+            }
+        }
     }
 }
 ```
+
+#### Preventing Unlinking of Last Provider
+
+By default, `preventUnlinkingLastProvider` is set to `true`, which prevents users from unlinking their only authentication method. This ensures users always have at least one way to sign in. When enabled, the link/unlink button is automatically hidden when a provider is the only one linked to the account.
+
+Set `preventUnlinkingLastProvider: false` to allow users to unlink their last provider (not recommended for most use cases).
 
 ### Firebase Integration Notes
 
