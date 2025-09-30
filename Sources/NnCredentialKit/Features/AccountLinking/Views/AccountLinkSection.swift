@@ -24,8 +24,8 @@ public struct AccountLinkSection<LinkButton: View>: View {
     ///   - config: The color configuration for the section.
     ///   - delegate: The delegate responsible for handling account link actions.
     ///   - appleSignInScopes: The scopes to request during Apple Sign-In.
-    ///   - preventUnlinkingLastProvider: When true, hides the link button if the provider is the only one linked. Defaults to false.
-    public init(config: AccountLinkSectionColorsConfig, delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope], preventUnlinkingLastProvider: Bool = false, @ViewBuilder linkButton: @escaping (AccountLinkButtonDelegate) -> LinkButton) {
+    ///   - preventUnlinkingLastProvider: When true, hides the link button if the provider is the only one linked. Defaults to true.
+    public init(config: AccountLinkSectionColorsConfig, delegate: AccountLinkDelegate, appleSignInScopes: [ASAuthorization.Scope], preventUnlinkingLastProvider: Bool = true, @ViewBuilder linkButton: @escaping (AccountLinkButtonDelegate) -> LinkButton) {
         self.config = config
         self.linkButton = linkButton
         self._viewModel = .init(wrappedValue: .init(delegate: delegate, appleSignInScopes: appleSignInScopes, preventUnlinkingLastProvider: preventUnlinkingLastProvider))
