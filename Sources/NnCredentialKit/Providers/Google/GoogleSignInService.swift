@@ -5,16 +5,28 @@
 //  Created by Nikolai Nobadi on 9/29/25.
 //
 
-@MainActor
-final class GoogleSignInService {
-    private let client: GoogleSignInClient
+import UIKit
 
+@MainActor
+public final class GoogleSignInService {
+    private let client: GoogleSignInClient
+    
     init(client: any GoogleSignInClient) {
         self.client = client
     }
 }
 
-extension GoogleSignInService {
+public extension GoogleSignInService {
+    /// Creates a Google Sign-In service with the specified view controller.
+    /// - Parameter viewController: The view controller from which to present the sign-in flow.
+    convenience init(viewController: UIViewController?) {
+        self.init(client: DefaultGoogleSignInClient(viewController: viewController))
+    }
+}
+
+public extension GoogleSignInService {
+    /// Initiates the Google Sign-In process.
+    /// - Returns: A `GoogleCredentialInfo` object if sign-in is successful, or `nil` if the user cancels.
     func signIn() async throws -> GoogleCredentialInfo? {
         guard let result = try await client.signIn() else {
             return nil

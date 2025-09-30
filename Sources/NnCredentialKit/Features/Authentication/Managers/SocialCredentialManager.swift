@@ -32,6 +32,8 @@ extension SocialCredentialManager: SocialCredentialProvider {
     /// Loads the Google credential for authentication.
     /// - Returns: The loaded `GoogleCredentialInfo` or `nil` if the operation fails.
     public func loadGoogleCredential() async throws -> GoogleCredentialInfo? {
-        return try await GoogleSignInHandler.signIn(rootVC: UIApplication.shared.getTopViewController())
+        let viewController = UIApplication.shared.getTopViewController()
+        let client = DefaultGoogleSignInClient(viewController: viewController)
+        return try await GoogleSignInService(client: client).signIn()
     }
 }
