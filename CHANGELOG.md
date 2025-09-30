@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [3.1.0] - 2025-09-30
+### Added
+- `preventUnlinkingLastProvider` parameter to `AccountLinkSection` and `AccountLinkViewModel` to prevent users from unlinking their only authentication method (defaults to `true`)
+- `shouldShowButton(for:)` method to `AccountLinkViewModel` for determining button visibility based on provider state
+
+### Changed
+- Renamed `AppleSignInCoordinator` to `AppleSignInService` for consistency
+- Renamed `GoogleSignInHandler` to `GoogleSignInService` (old name deprecated but still available)
+- Updated documentation to reflect new service naming conventions
+- Reorganized Apple and Google provider code into feature-based architecture
+
+### Removed
+- `linkButtonColor` property from `AccountLinkSectionColorsConfig` (no longer used)
+
 ## [3.0.1] - 2025-01-08
 ### Changed
 - Improved documentation in README.md
