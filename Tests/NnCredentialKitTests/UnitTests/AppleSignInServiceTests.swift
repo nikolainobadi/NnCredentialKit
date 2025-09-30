@@ -1,5 +1,5 @@
 //
-//  AppleSignInCoordinatorTests.swift
+//  AppleSignInServiceTests.swift
 //  NnCredentialKit
 //
 //  Created by Nikolai Nobadi on 9/28/25.
@@ -10,7 +10,7 @@ import AuthenticationServices
 @testable import NnCredentialKit
 
 @MainActor
-struct AppleSignInCoordinatorTests {
+struct AppleSignInServiceTests {
     @Test("Uses default scopes and hashed nonce when starting session")
     func usesDefaultScopesAndHashedNonce() async throws {
         let nonce = "nonce-123"
@@ -78,15 +78,15 @@ struct AppleSignInCoordinatorTests {
 
 
 // MARK: - SUT
-private extension AppleSignInCoordinatorTests {
-    func makeSUT(nonce: String = "n", result: Result<AppleAuthRawCredential, any Error> = .failure(Self.makeCanceledNSError())) -> (sut: AppleSignInCoordinator, session: MockSession) {
+private extension AppleSignInServiceTests {
+    func makeSUT(nonce: String = "n", result: Result<AppleAuthRawCredential, any Error> = .failure(Self.makeCanceledNSError())) -> (sut: AppleSignInService, session: MockSession) {
         let provider = MockNonceProvider(nonce: nonce)
         let session = MockSession(result: result)
-        let sut = AppleSignInCoordinator(session: session, provider: provider, converter: AppleCredentialConverter())
-        
+        let sut = AppleSignInService(session: session, provider: provider, converter: AppleCredentialConverter())
+
         return (sut, session)
     }
-    
+
     func makeRawCredential(email: String? = nil, firstName: String? = nil, lastName: String? = nil, idTokenData: Data? = nil) -> AppleAuthRawCredential {
         return .init(email: email, fullName: .init(givenName: firstName, familyName: lastName), idTokenData: idTokenData)
     }
@@ -98,7 +98,7 @@ private extension AppleSignInCoordinatorTests {
 
 
 // MARK: - Mocks
-private extension AppleSignInCoordinatorTests {
+private extension AppleSignInServiceTests {
     struct MockNonceProvider: NonceProvider, Sendable {
         let nonce: String
         

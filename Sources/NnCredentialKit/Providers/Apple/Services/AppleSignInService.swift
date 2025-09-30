@@ -1,27 +1,27 @@
 //
-//  AppleSignInCoordinator.swift
-//  
+//  AppleSignInService.swift
+//
 //
 //  Created by Nikolai Nobadi on 8/3/24.
 //
 
 import AuthenticationServices
 
-/// A coordinator responsible for managing the Apple Sign-In process.
+/// A service responsible for managing the Apple Sign-In process.
 @MainActor
-public final class AppleSignInCoordinator: NSObject {
+public final class AppleSignInService: NSObject {
     private let session: AppleAuthSession
     private let nonceProvider: NonceProvider
     private let converter: AppleCredentialConverter
-    
+
     private var currentNonce: String?
-    
+
     init(session: AppleAuthSession, provider: NonceProvider, converter: AppleCredentialConverter) {
         self.session = session
         self.converter = converter
         self.nonceProvider = provider
     }
-    
+
     public override init() {
         self.nonceProvider = DefaultNonceProvider()
         self.session = DefaultAppleAuthSession()
@@ -31,7 +31,7 @@ public final class AppleSignInCoordinator: NSObject {
 
 
 // MARK: - Actions
-public extension AppleSignInCoordinator {
+public extension AppleSignInService {
     func createAppleTokenInfo(requestedScopes: [ASAuthorization.Scope]? = [.email, .fullName]) async throws -> AppleCredentialInfo? {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<AppleCredentialInfo?, Error>) in
             let nonce = nonceProvider.make()
@@ -40,7 +40,7 @@ public extension AppleSignInCoordinator {
                 guard let self else {
                     return
                 }
-                
+
                 switch result {
                 case .success(let raw):
                     do {
@@ -62,6 +62,12 @@ public extension AppleSignInCoordinator {
         }
     }
 }
+
+
+// MARK: - Deprecated
+/// - Warning: This type is deprecated. Use `AppleSignInService` instead.
+@available(*, deprecated, renamed: "AppleSignInService", message: "Use AppleSignInService instead")
+public typealias AppleSignInCoordinator = AppleSignInService
 
 
 // MARK: - Dependencies
