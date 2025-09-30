@@ -1,5 +1,5 @@
 //
-//  GoogleSignInCoordinatorTests.swift
+//  GoogleSignInServiceTests.swift
 //  NnCredentialKit
 //
 //  Created by Nikolai Nobadi on 9/29/25.
@@ -9,7 +9,7 @@ import Testing
 @testable import NnCredentialKit
 
 @MainActor
-struct GoogleSignInCoordinatorTests {
+struct GoogleSignInServiceTests {
     @Test("Returns nil when client returns nil")
     func returnsNilWhenClientReturnsNil() async throws {
         let sut = makeSUT(clientResult: nil).sut
@@ -101,10 +101,10 @@ struct GoogleSignInCoordinatorTests {
 
 
 // MARK: - SUT
-private extension GoogleSignInCoordinatorTests {
-    func makeSUT(clientResult: GoogleSignInResult?, clientError: (any Error)? = nil) -> (sut: GoogleSignInCoordinator, client: MockClient) {
+private extension GoogleSignInServiceTests {
+    func makeSUT(clientResult: GoogleSignInResult?, clientError: (any Error)? = nil) -> (sut: GoogleSignInService, client: MockClient) {
         let client = MockClient(result: clientResult, error: clientError)
-        let sut = GoogleSignInCoordinator(client: client)
+        let sut = GoogleSignInService(client: client)
 
         return (sut, client)
     }
@@ -116,7 +116,7 @@ private extension GoogleSignInCoordinatorTests {
 
 
 // MARK: - Mocks
-private extension GoogleSignInCoordinatorTests {
+private extension GoogleSignInServiceTests {
     final class MockClient: GoogleSignInClient {
         private let result: GoogleSignInResult?
         private let error: (any Error)?
