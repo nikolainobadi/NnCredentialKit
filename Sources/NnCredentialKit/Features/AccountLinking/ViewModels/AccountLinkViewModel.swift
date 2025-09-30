@@ -12,22 +12,27 @@ import Foundation
 public final class AccountLinkViewModel: ObservableObject {
     /// The list of providers currently available for linking/unlinking.
     @Published public var providers: [AuthProvider]
-    
+
+    /// When true, prevents displaying the link button if the provider is the only one linked to the account.
+    public let preventUnlinkingLastProvider: Bool
+
     private let delegate: AccountLinkDelegate
     private let reauthenticator: Reauthenticator
     private let credentialProvider: CredentialTypeProvider
-    
+
     /// Initializes the view model with the given parameters.
     /// - Parameters:
     ///   - providers: The initial list of providers.
     ///   - delegate: The delegate responsible for handling account link actions.
     ///   - reauthenticator: The reauthenticator responsible for handling reauthentication.
     ///   - credentialProvider: The provider responsible for loading credentials.
-    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: Reauthenticator, credentialProvider: CredentialTypeProvider) {
+    ///   - preventUnlinkingLastProvider: When true, hides the link button if the provider is the only one linked. Defaults to false.
+    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: Reauthenticator, credentialProvider: CredentialTypeProvider, preventUnlinkingLastProvider: Bool = false) {
         self.delegate = delegate
         self.providers = providers
         self.reauthenticator = reauthenticator
         self.credentialProvider = credentialProvider
+        self.preventUnlinkingLastProvider = preventUnlinkingLastProvider
     }
 }
 
@@ -38,7 +43,18 @@ public extension AccountLinkViewModel {
     func loadProviders() {
         providers = delegate.loadSupportedProviders()
     }
-    
+
+    /// Determines whether the link button should be shown for a given provider.
+    /// - Parameter provider: The provider to check.
+    /// - Returns: True if the button should be shown, false otherwise.
+    func shouldShowButton(for provider: AuthProvider) -> Bool {
+        guard preventUnlinkingLastProvider else { return true }
+        guard provider.isLinked else { return true }
+
+        let linkedProviderCount = providers.filter { $0.isLinked }.count
+        return linkedProviderCount > 1
+    }
+
     /// Handles the link/unlink action for a specific provider.
     /// - Parameter provider: The provider to be linked or unlinked.
     func linkAction(_ provider: AuthProvider) async throws {
@@ -47,7 +63,7 @@ public extension AccountLinkViewModel {
         } else {
             try await linkAccount(provider)
         }
-        
+
         loadProviders()
     }
 }
@@ -60,7 +76,10 @@ private extension AccountLinkViewModel {
     ///   - provider: The provider to be linked.
     ///   - credentialType: The credential type to be used for linking. Optional.
     func linkAccount(_ provider: AuthProvider, credentialType: CredentialType? = nil) async throws {
-        guard let credentialType = try await credentialProvider.loadCredential(provider.type) else { return }
+        guard let credentialType = try await credentialProvider.loadCredential(provider.type) else {
+            return
+        }
+        
         try await linkAccountToCredential(credentialType)
     }
     
@@ -78,6 +97,7 @@ private extension AccountLinkViewModel {
         guard providers.filter({ $0.isLinked }).count > 1 else {
             throw CredentialError.cannotUnlinkOnlyProvider
         }
+        
         try await handleResult(delegate.unlinkProvider(provider.type)) { [unowned self] in
             try await unlinkAccount(provider)
         }
@@ -89,9 +109,12 @@ private extension AccountLinkViewModel {
     ///   - action: The action to perform after reauthentication, if required.
     func handleResult(_ result: AccountCredentialResult, actionAfterReauth action: @escaping () async throws -> Void) async throws {
         switch result {
-        case .success: break
-        case .failure(let error): throw error
-        case .reauthRequired: try await reauthenticator.start(actionAfterReauth: action)
+        case .success:
+            break
+        case .failure(let error):
+            throw error
+        case .reauthRequired:
+            try await reauthenticator.start(actionAfterReauth: action)
         }
     }
 }
