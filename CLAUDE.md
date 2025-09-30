@@ -75,8 +75,8 @@ Sources/NnCredentialKit/
 - **Reauthentication**: `CredentialAlertHandler`, reauth extensions
 
 **Providers Layer:**
-- **Apple**: `AppleSignInCoordinator`, `AppleCredentialInfo`, nonce handling
-- **Google**: `GoogleSignInHandler`, `GoogleCredentialInfo`
+- **Apple**: `AppleSignInService`, `AppleCredentialInfo`, nonce handling
+- **Google**: `GoogleSignInService`, `GoogleCredentialInfo`
 
 **Infrastructure Layer:**
 - Platform extensions: `UIApplication+Extensions`
