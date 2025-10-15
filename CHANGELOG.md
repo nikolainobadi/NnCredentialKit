@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [3.2.0] - 2025-10-15
+### Added
+- `AccountLinkActionResult` enum to distinguish between successful and canceled account linking operations
+- Return values to `linkAction()` methods in `AccountLinkViewModel` and `AccountLinkButtonDelegate` to enable clients to detect when users cancel authentication flows
+
+### Changed
+- `AccountLinkButtonDelegate.linkAction()` now returns `AccountLinkActionResult` (marked as `@discardableResult` for backward compatibility)
+- `AccountLinkViewModel.linkAction(_:)` now returns `AccountLinkActionResult` to indicate success or user cancellation
+
 ## [3.1.0] - 2025-09-30
 ### Added
 - `preventUnlinkingLastProvider` parameter to `AccountLinkSection` and `AccountLinkViewModel` to prevent users from unlinking their only authentication method (defaults to `true`)

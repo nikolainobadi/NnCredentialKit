@@ -45,9 +45,9 @@ public protocol AccountLinkDelegate: ReauthenticationDelegate {
 // MARK: - AccountLinkButtonDelegate
 public struct AccountLinkButtonDelegate: Sendable {
     private let provider: AuthProvider
-    private let onLinkAction: @Sendable (AuthProvider) async throws -> Void
-    
-    init(provider: AuthProvider, onLinkAction: @Sendable @escaping (AuthProvider) async throws -> Void) {
+    private let onLinkAction: @Sendable (AuthProvider) async throws -> AccountLinkActionResult
+
+    init(provider: AuthProvider, onLinkAction: @Sendable @escaping (AuthProvider) async throws -> AccountLinkActionResult) {
         self.provider = provider
         self.onLinkAction = onLinkAction
     }
@@ -57,8 +57,9 @@ public extension AccountLinkButtonDelegate {
     var buttonText: String {
         return provider.isLinked ? "Unlink" : "Link"
     }
-    
-    func linkAction() async throws {
+
+    @discardableResult
+    func linkAction() async throws -> AccountLinkActionResult {
         try await onLinkAction(provider)
     }
 }
