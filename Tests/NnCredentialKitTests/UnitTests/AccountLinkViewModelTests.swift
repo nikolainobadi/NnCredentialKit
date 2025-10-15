@@ -20,10 +20,11 @@ struct AccountLinkViewModelTests {
         let credential = makeEmailPasswordCredential()
         let (sut, delegate) = makeSUT(credentialType: credential)
 
-        try await sut.linkAction(provider)
-        
+        let result = try await sut.linkAction(provider)
+
         let credentialType = try #require(delegate.credentialType)
 
+        #expect(result == .success)
         #expect(delegate.providerType == nil)
         #expect(credentialType.id == CredentialType.emailPassword(email: "", password: "").id)
     }
@@ -34,20 +35,21 @@ struct AccountLinkViewModelTests {
         let (sut, delegate) = makeSUT(throwProviderError: true)
 
         await #expect(throws: TestError.credentialTypeProvider) {
-            try await sut.linkAction(provider)
+            _ = try await sut.linkAction(provider)
         }
 
         #expect(delegate.providerType == nil)
         #expect(delegate.credentialType == nil)
     }
 
-    @Test("Does not link account when credential is nil")
-    func doesNotLinkWhenCredentialIsNil() async throws {
+    @Test("Returns canceled result when credential is nil")
+    func returnsCanceledWhenCredentialIsNil() async throws {
         let provider = makeAuthProvider(.emailPassword)
         let (sut, delegate) = makeSUT()
 
-        try await sut.linkAction(provider)
+        let result = try await sut.linkAction(provider)
 
+        #expect(result == .canceled)
         #expect(delegate.providerType == nil)
         #expect(delegate.credentialType == nil)
     }
@@ -60,7 +62,7 @@ struct AccountLinkViewModelTests {
         let (sut, _) = makeSUT(credentialType: credential, firstResult: .failure(error))
 
         await #expect(throws: error) {
-            try await sut.linkAction(provider)
+            _ = try await sut.linkAction(provider)
         }
     }
 
@@ -72,7 +74,7 @@ struct AccountLinkViewModelTests {
         let (sut, _) = makeSUT(credentialType: credential, firstResult: .reauthRequired, secondResult: .failure(error))
 
         await #expect(throws: error) {
-            try await sut.linkAction(provider)
+            _ = try await sut.linkAction(provider)
         }
     }
 
@@ -82,8 +84,9 @@ struct AccountLinkViewModelTests {
         let secondProvider = makeAuthProvider(.apple, email: "tester@apple.com")
         let (sut, delegate) = makeSUT(providers: [provider, secondProvider])
 
-        try await sut.linkAction(provider)
+        let result = try await sut.linkAction(provider)
 
+        #expect(result == .success)
         #expect(delegate.providerType == provider.type)
     }
 
@@ -93,7 +96,7 @@ struct AccountLinkViewModelTests {
         let (sut, _) = makeSUT(providers: [provider])
 
         await #expect(throws: CredentialError.cannotUnlinkOnlyProvider) {
-            try await sut.linkAction(provider)
+            _ = try await sut.linkAction(provider)
         }
     }
 }

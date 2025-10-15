@@ -57,14 +57,20 @@ public extension AccountLinkViewModel {
 
     /// Handles the link/unlink action for a specific provider.
     /// - Parameter provider: The provider to be linked or unlinked.
-    func linkAction(_ provider: AuthProvider) async throws {
+    /// - Returns: The result of the link/unlink action indicating success or cancellation.
+    @discardableResult
+    func linkAction(_ provider: AuthProvider) async throws -> AccountLinkActionResult {
+        let result: AccountLinkActionResult
+
         if provider.isLinked {
-            try await unlinkAccount(provider)
+            result = try await unlinkAccount(provider)
         } else {
-            try await linkAccount(provider)
+            result = try await linkAccount(provider)
         }
 
         loadProviders()
+
+        return result
     }
 }
 
@@ -75,12 +81,15 @@ private extension AccountLinkViewModel {
     /// - Parameters:
     ///   - provider: The provider to be linked.
     ///   - credentialType: The credential type to be used for linking. Optional.
-    func linkAccount(_ provider: AuthProvider, credentialType: CredentialType? = nil) async throws {
+    /// - Returns: The result of the link action indicating success or cancellation.
+    func linkAccount(_ provider: AuthProvider, credentialType: CredentialType? = nil) async throws -> AccountLinkActionResult {
         guard let credentialType = try await credentialProvider.loadCredential(provider.type) else {
-            return
+            return .canceled
         }
-        
+
         try await linkAccountToCredential(credentialType)
+
+        return .success
     }
     
     /// Links an account to a specific credential.
@@ -93,14 +102,17 @@ private extension AccountLinkViewModel {
     
     /// Unlinks an account from a specific provider.
     /// - Parameter provider: The provider to be unlinked.
-    func unlinkAccount(_ provider: AuthProvider) async throws {
+    /// - Returns: The result of the unlink action indicating success.
+    func unlinkAccount(_ provider: AuthProvider) async throws -> AccountLinkActionResult {
         guard providers.filter({ $0.isLinked }).count > 1 else {
             throw CredentialError.cannotUnlinkOnlyProvider
         }
-        
+
         try await handleResult(delegate.unlinkProvider(provider.type)) { [unowned self] in
-            try await unlinkAccount(provider)
+            _ = try await unlinkAccount(provider)
         }
+
+        return .success
     }
     
     /// Handles the result of a credential operation, with reauthentication if required.

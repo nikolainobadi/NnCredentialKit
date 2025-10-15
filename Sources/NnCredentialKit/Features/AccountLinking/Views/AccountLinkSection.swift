@@ -76,7 +76,8 @@ public struct AccountLinkSection<LinkButton: View>: View {
     return AccountLinkSection(config: .init(), delegate: PreviewDelegate(), appleSignInScopes: []) { delegate in
         Button(delegate.buttonText) {
             Task {
-                try? await delegate.linkAction()
+                let result = try? await delegate.linkAction()
+                print("Link action result: \(result == .success ? "success" : "canceled")")
             }
         }
     }
