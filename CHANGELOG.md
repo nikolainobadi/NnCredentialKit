@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-06-06
+### Added
+- `debugEnabled` parameter to `AccountLinkSection`, `AccountLinkViewModel`, `SocialCredentialManager`, `AccountDeleter`, `AppleSignInService`, and `GoogleSignInService` to print credential workflow details to the console for troubleshooting (defaults to `false`)
+
 ## [3.2.0] - 2025-10-15
 ### Added
 - `AccountLinkActionResult` enum to distinguish between successful and canceled account linking operations
@@ -81,3 +85,14 @@
 - SocialCredentialManager for unified social authentication
 - Comprehensive error handling with CredentialError types
 - Alert handler for user-friendly error messages
+
+[Unreleased]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.2.0...v3.3.0
+[3.2.0]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.1.0...v3.2.0
+[3.1.0]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.0.1...v3.1.0
+[3.0.1]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/nikolainobadi/NnCredentialKit/compare/v2.1.1...v3.0.0
+[2.1.1]: https://github.com/nikolainobadi/NnCredentialKit/compare/v2.1.0...v2.1.1
+[2.1.0]: https://github.com/nikolainobadi/NnCredentialKit/compare/v2.0.1...v2.1.0
+[2.0.1]: https://github.com/nikolainobadi/NnCredentialKit/compare/v1.0.0...v2.0.1
+[1.0.0]: https://github.com/nikolainobadi/NnCredentialKit/releases/tag/v1.0.0

@@ -16,6 +16,7 @@ NnCredentialKit is a comprehensive Swift package designed to handle user authent
   - [Social Sign-In](#social-sign-in)
   - [Account Linking](#account-linking)
   - [Firebase Integration Notes](#firebase-integration-notes)
+  - [Debug Logging](#debug-logging)
 - [Dependencies](#dependencies)
 - [Contributing](#contributing)
 - [License](#license)
@@ -27,6 +28,7 @@ NnCredentialKit is a comprehensive Swift package designed to handle user authent
 - **Reauthentication Workflow**: Handle reauthentication for sensitive actions using custom alerts.
 - **Social Sign-In Integration**: Seamlessly integrate [Apple Sign-In](https://developer.apple.com/documentation/authenticationservices) and [Google Sign-In](https://developers.google.com/identity/sign-in/ios) flows with reusable components.
 - **Error Handling**: Robust error handling for common authentication issues.
+- **Debug Logging**: Opt-in console logging for every authentication workflow via a `debugEnabled` flag.
 
 ## Installation
 
@@ -41,7 +43,7 @@ To integrate `NnCredentialKit` into your Xcode project using Swift Package Manag
    https://github.com/nikolainobadi/NnCredentialKit
    ```
 
-3. Choose the version `3.0.0`.
+3. Choose the version `3.2.0`.
 4. Select the target where you want to add the package.
 
 ### Swift Package
@@ -49,7 +51,7 @@ To integrate `NnCredentialKit` into your Xcode project using Swift Package Manag
 If you are using `NnCredentialKit` in another Swift package, add it to your `Package.swift` dependencies:
 
 ```swift
-.package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "3.0.0")
+.package(url: "https://github.com/nikolainobadi/NnCredentialKit", from: "3.2.0")
 ```
 
 Then, in the target you want to use `NnCredentialKit`, add it to the list of dependencies:
@@ -74,7 +76,7 @@ Then, in the target you want to use `NnCredentialKit`, add it to the list of dep
 
 ```swift
 let appleCredentialInfo = try await AppleSignInService().createAppleTokenInfo()
-let googleCredentialInfo = try await GoogleSignInService.signIn(rootVC: viewController)
+let googleCredentialInfo = try await GoogleSignInService(viewController: viewController).signIn()
 ```
 
 Alternatively, you can use `SocialCredentialManager` to handle both operations:
@@ -192,6 +194,32 @@ func unlinkProvider(_ type: AuthProviderType) async -> AccountCredentialResult {
 In these examples:
 - `delegate.link(to:)` and `delegate.unlink(from:)` represent your Firebase linking/unlinking methods.
 - `handleAuthOperation` ensures any `.requiresRecentLogin` Firebase error is automatically escalated to `.reauthRequired`, allowing NnCredentialKit to seamlessly handle reauthentication.
+
+### Debug Logging
+
+Every main entry point accepts a `debugEnabled` parameter (defaults to `false`). When enabled, NnCredentialKit prints workflow details to the console, prefixed with `[NnCredentialKit]`. The flag is automatically threaded through to all internal components.
+
+```swift
+// SwiftUI account linking
+AccountLinkSection(
+    config: .init(),
+    delegate: YourAccountLinkDelegate(),
+    appleSignInScopes: [.email],
+    debugEnabled: true
+) { delegate in
+    // ...
+}
+
+// Account deletion
+let deleter = AccountDeleter(delegate: yourDelegate, debugEnabled: true)
+
+// Standalone services
+let appleService = AppleSignInService(debugEnabled: true)
+let googleService = GoogleSignInService(viewController: viewController, debugEnabled: true)
+let socialManager = SocialCredentialManager(appleSignInScopes: [.email], debugEnabled: true)
+```
+
+Log messages cover workflow steps, cancellations, and failures. Sensitive values (passwords, tokens, nonces, email addresses) are never logged.
 
 ## Dependencies
 
