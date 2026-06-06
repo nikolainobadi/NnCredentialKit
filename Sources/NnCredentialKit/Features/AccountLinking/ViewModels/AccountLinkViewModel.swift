@@ -16,6 +16,7 @@ public final class AccountLinkViewModel: ObservableObject {
     /// When true, prevents displaying the link button if the provider is the only one linked to the account.
     public let preventUnlinkingLastProvider: Bool
 
+    private let debugEnabled: Bool
     private let delegate: AccountLinkDelegate
     private let reauthenticator: Reauthenticator
     private let credentialProvider: CredentialTypeProvider
@@ -27,9 +28,11 @@ public final class AccountLinkViewModel: ObservableObject {
     ///   - reauthenticator: The reauthenticator responsible for handling reauthentication.
     ///   - credentialProvider: The provider responsible for loading credentials.
     ///   - preventUnlinkingLastProvider: When true, hides the link button if the provider is the only one linked. Defaults to false.
-    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: Reauthenticator, credentialProvider: CredentialTypeProvider, preventUnlinkingLastProvider: Bool = false) {
+    ///   - debugEnabled: When `true`, prints account link details to the console. Nothing is printed when `false` (default).
+    init(providers: [AuthProvider] = [], delegate: AccountLinkDelegate, reauthenticator: Reauthenticator, credentialProvider: CredentialTypeProvider, preventUnlinkingLastProvider: Bool = false, debugEnabled: Bool = false) {
         self.delegate = delegate
         self.providers = providers
+        self.debugEnabled = debugEnabled
         self.reauthenticator = reauthenticator
         self.credentialProvider = credentialProvider
         self.preventUnlinkingLastProvider = preventUnlinkingLastProvider
@@ -63,11 +66,14 @@ public extension AccountLinkViewModel {
         let result: AccountLinkActionResult
 
         if provider.isLinked {
+            log("Starting unlink action for \(provider.type) provider")
             result = try await unlinkAccount(provider)
         } else {
+            log("Starting link action for \(provider.type) provider")
             result = try await linkAccount(provider)
         }
 
+        log("Link action finished with result: \(result)")
         loadProviders()
 
         return result
@@ -84,6 +90,7 @@ private extension AccountLinkViewModel {
     /// - Returns: The result of the link action indicating success or cancellation.
     func linkAccount(_ provider: AuthProvider, credentialType: CredentialType? = nil) async throws -> AccountLinkActionResult {
         guard let credentialType = try await credentialProvider.loadCredential(provider.type) else {
+            log("Credential loading canceled, link action aborted")
             return .canceled
         }
 
@@ -105,6 +112,7 @@ private extension AccountLinkViewModel {
     /// - Returns: The result of the unlink action indicating success.
     func unlinkAccount(_ provider: AuthProvider) async throws -> AccountLinkActionResult {
         guard providers.filter({ $0.isLinked }).count > 1 else {
+            log("Cannot unlink the only linked provider")
             throw CredentialError.cannotUnlinkOnlyProvider
         }
 
@@ -124,9 +132,17 @@ private extension AccountLinkViewModel {
         case .success:
             break
         case .failure(let error):
+            log("Credential operation failed: \(error.localizedDescription)")
             throw error
         case .reauthRequired:
+            log("Reauthentication required, starting reauth flow")
             try await reauthenticator.start(actionAfterReauth: action)
         }
+    }
+
+    /// Prints a message to the console when debug logging is enabled.
+    /// - Parameter message: The message to print.
+    func log(_ message: String) {
+        CredentialKitLogger.log(message, isEnabled: debugEnabled)
     }
 }
