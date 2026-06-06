@@ -10,32 +10,32 @@ import Testing
 
 @MainActor
 struct GoogleSignInServiceTests {
-    @Test("Returns nil when client returns nil")
-    func returnsNilWhenClientReturnsNil() async throws {
-        let sut = makeSUT(clientResult: nil).sut
+    @Test
+    func `Returns nil when client returns nil`() async throws {
+        let sut = makeSUT(clientResult: nil)
 
         let result = try await sut.signIn()
 
         #expect(result == nil)
     }
 
-    @Test("Returns nil when sign-in result missing id token")
-    func returnsNilWhenSignInResultMissingIdToken() async throws {
+    @Test
+    func `Returns nil when sign-in result missing id token`() async throws {
         let signInResult = makeSignInResult(idTokenString: nil)
-        let sut = makeSUT(clientResult: signInResult).sut
+        let sut = makeSUT(clientResult: signInResult)
 
         let result = try await sut.signIn()
 
         #expect(result == nil)
     }
 
-    @Test("Returns credential info with email and token when sign-in succeeds")
-    func returnsCredentialInfoWithEmailAndTokenWhenSignInSucceeds() async throws {
+    @Test
+    func `Returns credential info with email and token when sign-in succeeds`() async throws {
         let email = "tester@gmail.com"
         let idToken = "id-token-123"
         let accessToken = "access-token-456"
         let signInResult = makeSignInResult(idTokenString: idToken, accessTokenString: accessToken, email: email)
-        let sut = makeSUT(clientResult: signInResult).sut
+        let sut = makeSUT(clientResult: signInResult)
 
         let result = try #require(try await sut.signIn())
 
@@ -44,56 +44,56 @@ struct GoogleSignInServiceTests {
         #expect(result.accessTokenId == accessToken)
     }
 
-    @Test("Combines given name and family name into display name")
-    func combinesGivenNameAndFamilyNameIntoDisplayName() async throws {
+    @Test
+    func `Combines given name and family name into display name`() async throws {
         let givenName = "John"
         let familyName = "Doe"
         let signInResult = makeSignInResult(givenName: givenName, familyName: familyName)
-        let sut = makeSUT(clientResult: signInResult).sut
+        let sut = makeSUT(clientResult: signInResult)
 
         let result = try #require(try await sut.signIn())
 
         #expect(result.displayName == "\(givenName) \(familyName)")
     }
 
-    @Test("Handles partial name with only given name")
-    func handlesPartialNameWithOnlyGivenName() async throws {
+    @Test
+    func `Handles partial name with only given name`() async throws {
         let givenName = "John"
         let signInResult = makeSignInResult(givenName: givenName, familyName: nil)
-        let sut = makeSUT(clientResult: signInResult).sut
+        let sut = makeSUT(clientResult: signInResult)
 
         let result = try #require(try await sut.signIn())
 
         #expect(result.displayName == givenName)
     }
 
-    @Test("Handles partial name with only family name")
-    func handlesPartialNameWithOnlyFamilyName() async throws {
+    @Test
+    func `Handles partial name with only family name`() async throws {
         let familyName = "Doe"
         let signInResult = makeSignInResult(givenName: nil, familyName: familyName)
-        let sut = makeSUT(clientResult: signInResult).sut
+        let sut = makeSUT(clientResult: signInResult)
 
         let result = try #require(try await sut.signIn())
 
         #expect(result.displayName == familyName)
     }
 
-    @Test("Handles empty display name when both names are nil")
-    func handlesEmptyDisplayNameWhenBothNamesAreNil() async throws {
+    @Test
+    func `Handles empty display name when both names are nil`() async throws {
         let signInResult = makeSignInResult(givenName: nil, familyName: nil)
-        let sut = makeSUT(clientResult: signInResult).sut
+        let sut = makeSUT(clientResult: signInResult)
 
         let displayName = try #require(try await sut.signIn()?.displayName)
 
         #expect(displayName.isEmpty)
     }
 
-    @Test("Propagates errors from client")
-    func propagatesErrorsFromClient() async {
-        enum TestError: Error { case signInFailed }
-        let sut = makeSUT(clientResult: nil, clientError: TestError.signInFailed).sut
+    @Test
+    func `Propagates errors from client`() async {
+        let error = TestError.network
+        let sut = makeSUT(clientResult: nil, clientError: error)
 
-        await #expect(throws: TestError.signInFailed) {
+        await #expect(throws: error) {
             _ = try await sut.signIn()
         }
     }
@@ -102,13 +102,16 @@ struct GoogleSignInServiceTests {
 
 // MARK: - SUT
 private extension GoogleSignInServiceTests {
-    func makeSUT(clientResult: GoogleSignInResult?, clientError: (any Error)? = nil) -> (sut: GoogleSignInService, client: MockClient) {
+    func makeSUT(clientResult: GoogleSignInResult?, clientError: (any Error)? = nil) -> GoogleSignInService {
         let client = MockClient(result: clientResult, error: clientError)
-        let sut = GoogleSignInService(client: client)
 
-        return (sut, client)
+        return GoogleSignInService(client: client)
     }
+}
 
+
+// MARK: - Helpers
+private extension GoogleSignInServiceTests {
     func makeSignInResult(idTokenString: String? = "id-token", accessTokenString: String = "access-token", email: String? = "test@gmail.com", givenName: String? = "Test", familyName: String? = "User") -> GoogleSignInResult {
         return .init(idTokenString: idTokenString, accessTokenString: accessTokenString, email: email, givenName: givenName, familyName: familyName)
     }
