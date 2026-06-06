@@ -10,8 +10,8 @@ import Testing
 
 @MainActor
 struct ReauthenticationManagerTests {
-    @Test("Throws if no linked providers exist")
-    func throwsIfNoLinkedProvidersExist() async {
+    @Test
+    func `Throws if no linked providers exist`() async {
         let sut = makeSUT().sut
 
         await #expect(throws: CredentialError.emptyAuthProviders) {
@@ -19,8 +19,8 @@ struct ReauthenticationManagerTests {
         }
     }
 
-    @Test("Throws if reauthentication is cancelled")
-    func throwsIfReauthIsCancelled() async {
+    @Test
+    func `Throws if reauthentication is cancelled`() async {
         let linked = makeLinkedProviders()
         let sut = makeSUT(linkedProviders: linked).sut
 
@@ -29,23 +29,25 @@ struct ReauthenticationManagerTests {
         }
     }
 
-    @Test("Uses selected credential for reauthentication")
-    func usesSelectedCredentialForReauth() async throws {
+    @Test
+    func `Uses selected credential for reauthentication`() async throws {
         let linked = makeLinkedProviders()
         let credential = makeEmailPasswordCredential()
         let (sut, delegate) = makeSUT(linkedProviders: linked, credentialType: credential)
 
         try await sut.start(actionAfterReauth: { })
 
-        #expect(delegate.credentialType?.id == credential.id)
+        let credentialType = try #require(delegate.credentialType)
+
+        #expect(credentialType.id == credential.id)
     }
 
-    @Test("Performs action after successful reauth")
-    func performsActionAfterReauth() async throws {
+    @Test
+    func `Performs action after successful reauth`() async throws {
         var called = false
         let linked = makeLinkedProviders()
         let credential = makeEmailPasswordCredential()
-        let (sut, _) = makeSUT(linkedProviders: linked, credentialType: credential)
+        let sut = makeSUT(linkedProviders: linked, credentialType: credential).sut
 
         try await sut.start {
             called = true
@@ -54,12 +56,12 @@ struct ReauthenticationManagerTests {
         #expect(called)
     }
 
-    @Test("Skips action if reauth fails")
-    func skipsActionIfReauthFails() async throws {
+    @Test
+    func `Skips action if reauth fails`() async throws {
         var called = false
         let linked = makeLinkedProviders()
         let credential = makeEmailPasswordCredential()
-        let (sut, _) = makeSUT(linkedProviders: linked, credentialType: credential, throwDelegateError: true)
+        let sut = makeSUT(linkedProviders: linked, credentialType: credential, throwDelegateError: true).sut
 
         do {
             try await sut.start {
@@ -72,7 +74,7 @@ struct ReauthenticationManagerTests {
 }
 
 
-// MARK: - Helpers
+// MARK: - SUT
 private extension ReauthenticationManagerTests {
     func makeSUT(
         linkedProviders: [AuthProvider] = [],
@@ -81,11 +83,15 @@ private extension ReauthenticationManagerTests {
         throwProviderError: Bool = false
     ) -> (sut: ReauthenticationManager, delegate: MockDelegate) {
         let delegate = MockDelegate(throwError: throwDelegateError, linkedProviders: linkedProviders)
-        let provider = StubProvider(throwError: throwProviderError, credentialType: credentialType)
+        let provider = MockCredentialProvider(throwError: throwProviderError, credentialType: credentialType)
         let sut = ReauthenticationManager(delegate: delegate, credentialProvider: provider)
         return (sut, delegate)
     }
+}
 
+
+// MARK: - Helpers
+private extension ReauthenticationManagerTests {
     func makeLinkedProviders(types: [AuthProviderType] = AuthProviderType.allCases) -> [AuthProvider] {
         types.map { .init(linkedEmail: "linked@\($0.rawValue).com", type: $0) }
     }
@@ -99,7 +105,7 @@ private extension ReauthenticationManagerTests {
 }
 
 
-// MARK: - Stubs
+// MARK: - Mocks
 private extension ReauthenticationManagerTests {
     final class MockDelegate: ReauthenticationDelegate, @unchecked Sendable {
         private let throwError: Bool
@@ -119,7 +125,7 @@ private extension ReauthenticationManagerTests {
         }
     }
 
-    final class StubProvider: CredentialReauthenticationProvider {
+    final class MockCredentialProvider: CredentialReauthenticationProvider {
         private let throwError: Bool
         private let credentialType: CredentialType?
 

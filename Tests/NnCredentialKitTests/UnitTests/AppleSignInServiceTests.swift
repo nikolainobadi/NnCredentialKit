@@ -11,8 +11,8 @@ import AuthenticationServices
 
 @MainActor
 struct AppleSignInServiceTests {
-    @Test("Uses default scopes and hashed nonce when starting session")
-    func usesDefaultScopesAndHashedNonce() async throws {
+    @Test
+    func `Uses default scopes and hashed nonce when starting session`() async throws {
         let nonce = "nonce-123"
         let (sut, session) = makeSUT(nonce: nonce)
 
@@ -23,8 +23,8 @@ struct AppleSignInServiceTests {
         #expect(captured.nonce == "HASH(\(nonce))")
     }
 
-    @Test("Uses custom scopes and hashed nonce when provided")
-    func usesCustomScopes() async throws {
+    @Test
+    func `Uses custom scopes and hashed nonce when provided`() async throws {
         let nonce = "abc"
         let customScopes: [ASAuthorization.Scope] = [.fullName]
         let (sut, session) = makeSUT(nonce: nonce)
@@ -36,24 +36,24 @@ struct AppleSignInServiceTests {
         #expect(captured.nonce == "HASH(\(nonce))")
     }
 
-    @Test("Returns nil on user cancel from ASAuthorizationError")
-    func returnsNilOnSystemCancel() async throws {
+    @Test
+    func `Returns nil on user cancel from ASAuthorizationError`() async throws {
         let sut = makeSUT().sut
         let result = try await sut.createAppleTokenInfo()
 
         #expect(result == nil)
     }
 
-    @Test("Returns nil on user cancel from AppleSignInError")
-    func returnsNilOnCustomCancel() async throws {
+    @Test
+    func `Returns nil on user cancel from AppleSignInError`() async throws {
         let sut = makeSUT(result: .failure(AppleSignInError.canceled)).sut
         let result = try await sut.createAppleTokenInfo()
 
         #expect(result == nil)
     }
 
-    @Test("Throws on non cancel errors")
-    func throwsOnOtherErrors() async {
+    @Test
+    func `Throws on non cancel errors`() async {
         enum E: Error { case boom }
         let sut = makeSUT(result: .failure(E.boom)).sut
 
@@ -62,8 +62,8 @@ struct AppleSignInServiceTests {
         }
     }
     
-    @Test("Returns token info with email and full name from credential")
-    func returnsTokenInfoWithEmailAndFullNameFromCredential() async throws {
+    @Test
+    func `Returns token info with email and full name from credential`() async throws {
         let email = "tester@gmail.com"
         let firstName = "mr"
         let lastName = "sir"
@@ -86,7 +86,11 @@ private extension AppleSignInServiceTests {
 
         return (sut, session)
     }
+}
 
+
+// MARK: - Helpers
+private extension AppleSignInServiceTests {
     func makeRawCredential(email: String? = nil, firstName: String? = nil, lastName: String? = nil, idTokenData: Data? = nil) -> AppleAuthRawCredential {
         return .init(email: email, fullName: .init(givenName: firstName, familyName: lastName), idTokenData: idTokenData)
     }

@@ -10,8 +10,8 @@ import Foundation
 @testable import NnCredentialKit
 
 struct AppleCredentialConverterTests {
-    @Test("Converts raw credential to Apple credential info with all fields")
-    func convertsRawCredentialToAppleCredentialInfoWithAllFields() throws {
+    @Test
+    func `Converts raw credential to Apple credential info with all fields`() throws {
         let email = "test@apple.com"
         let givenName = "John"
         let familyName = "Doe"
@@ -30,8 +30,8 @@ struct AppleCredentialConverterTests {
         #expect(result.nonce == nonce)
     }
 
-    @Test("Converts raw credential with minimal fields")
-    func convertsRawCredentialWithMinimalFields() throws {
+    @Test
+    func `Converts raw credential with minimal fields`() throws {
         let nonce = "test-nonce"
         let tokenString = "minimal-token"
         let tokenData = tokenString.data(using: .utf8)
@@ -46,8 +46,8 @@ struct AppleCredentialConverterTests {
         #expect(result.nonce == nonce)
     }
 
-    @Test("Throws error when nonce is nil")
-    func throwsErrorWhenNonceIsNil() {
+    @Test
+    func `Throws error when nonce is nil`() {
         let raw = makeRawCredential()
         let sut = makeSUT()
 
@@ -56,8 +56,8 @@ struct AppleCredentialConverterTests {
         }
     }
 
-    @Test("Throws error when token data cannot be serialized")
-    func throwsErrorWhenTokenDataCannotBeSerialized() {
+    @Test
+    func `Throws error when token data cannot be serialized`() {
         let nonce = "test-nonce"
         let raw = makeRawCredential(idTokenData: nil)
         let sut = makeSUT()
@@ -67,8 +67,8 @@ struct AppleCredentialConverterTests {
         }
     }
 
-    @Test("Throws error when token data is invalid UTF-8")
-    func throwsErrorWhenTokenDataIsInvalidUTF8() {
+    @Test
+    func `Throws error when token data is invalid UTF-8`() {
         let nonce = "test-nonce"
         let invalidData = Data([0xFF, 0xFE, 0xFD])
         let raw = makeRawCredential(idTokenData: invalidData)
@@ -82,8 +82,8 @@ struct AppleCredentialConverterTests {
 
 // MARK: - Display Name Tests
 extension AppleCredentialConverterTests {
-    @Test("Creates display name from full name with both components")
-    func createsDisplayNameFromFullNameWithBothComponents() {
+    @Test
+    func `Creates display name from full name with both components`() {
         let givenName = "Jane"
         let familyName = "Smith"
         let fullName = makePersonNameComponents(givenName: givenName, familyName: familyName)
@@ -93,8 +93,8 @@ extension AppleCredentialConverterTests {
         #expect(displayName == "\(givenName) \(familyName)")
     }
 
-    @Test("Creates display name with only given name")
-    func createsDisplayNameWithOnlyGivenName() {
+    @Test
+    func `Creates display name with only given name`() {
         let givenName = "Jane"
         let fullName = makePersonNameComponents(givenName: givenName, familyName: nil)
 
@@ -103,8 +103,8 @@ extension AppleCredentialConverterTests {
         #expect(displayName == givenName)
     }
 
-    @Test("Creates display name with only family name")
-    func createsDisplayNameWithOnlyFamilyName() {
+    @Test
+    func `Creates display name with only family name`() {
         let familyName = "Smith"
         let fullName = makePersonNameComponents(givenName: nil, familyName: familyName)
 
@@ -113,15 +113,15 @@ extension AppleCredentialConverterTests {
         #expect(displayName == familyName)
     }
 
-    @Test("Returns empty string when full name is nil")
-    func returnsEmptyStringWhenFullNameIsNil() {
+    @Test
+    func `Returns empty string when full name is nil`() {
         let displayName = AppleCredentialConverter.displayName(from: nil)
 
         #expect(displayName.isEmpty)
     }
 
-    @Test("Trims whitespace from display name")
-    func trimsWhitespaceFromDisplayName() {
+    @Test
+    func `Trims whitespace from display name`() {
         let fullName = makePersonNameComponents(givenName: " John ", familyName: " Doe ")
 
         let displayName = AppleCredentialConverter.displayName(from: fullName)
@@ -132,8 +132,8 @@ extension AppleCredentialConverterTests {
 
 // MARK: - Token Serialization Tests
 extension AppleCredentialConverterTests {
-    @Test("Serializes valid token data to string")
-    func serializesValidTokenDataToString() throws {
+    @Test
+    func `Serializes valid token data to string`() throws {
         let tokenString = "valid-token-string-12345"
         let tokenData = tokenString.data(using: .utf8)
 
@@ -142,15 +142,15 @@ extension AppleCredentialConverterTests {
         #expect(result == tokenString)
     }
 
-    @Test("Throws error when token data is nil")
-    func throwsErrorWhenTokenDataIsNil() {
+    @Test
+    func `Throws error when token data is nil`() {
         #expect(throws: AppleSignInError.unableToSerializeToken) {
             try AppleCredentialConverter.serializeToken(nil)
         }
     }
 
-    @Test("Serializes complex UTF-8 string correctly")
-    func serializesComplexUTF8StringCorrectly() throws {
+    @Test
+    func `Serializes complex UTF-8 string correctly`() throws {
         let complexString = "Token-with-特殊字符-🔐-and-numbers-123"
         let tokenData = complexString.data(using: .utf8)
 
@@ -165,7 +165,10 @@ private extension AppleCredentialConverterTests {
     func makeSUT() -> AppleCredentialConverter {
         return AppleCredentialConverter()
     }
+}
 
+// MARK: - Helpers
+private extension AppleCredentialConverterTests {
     func makeRawCredential(
         email: String? = "default@test.com",
         fullName: PersonNameComponents? = nil,

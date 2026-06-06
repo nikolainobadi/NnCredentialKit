@@ -5,8 +5,8 @@ import Testing
 
 @MainActor
 struct AccountLinkViewModelTests {
-    @Test("SUT starts with empty values")
-    func startsWithEmptyValues() {
+    @Test
+    func `SUT starts with empty values`() {
         let (sut, delegate) = makeSUT()
 
         #expect(sut.providers.isEmpty)
@@ -14,86 +14,123 @@ struct AccountLinkViewModelTests {
         #expect(delegate.credentialType == nil)
     }
 
-    @Test("Links account when provider is not linked")
-    func linksAccountIfNotLinked() async throws {
+    @Test
+    func `Returns success when linking an unlinked provider`() async throws {
+        let provider = makeAuthProvider(.emailPassword)
+        let credential = makeEmailPasswordCredential()
+        let sut = makeSUT(credentialType: credential).sut
+
+        let result = try await sut.linkAction(provider)
+
+        #expect(result == .success)
+    }
+
+    @Test
+    func `Sends credential to delegate without unlinking when provider is not linked`() async throws {
         let provider = makeAuthProvider(.emailPassword)
         let credential = makeEmailPasswordCredential()
         let (sut, delegate) = makeSUT(credentialType: credential)
 
-        let result = try await sut.linkAction(provider)
+        _ = try await sut.linkAction(provider)
 
         let credentialType = try #require(delegate.credentialType)
 
-        #expect(result == .success)
         #expect(delegate.providerType == nil)
-        #expect(credentialType.id == CredentialType.emailPassword(email: "", password: "").id)
+        #expect(credentialType.id == credential.id)
     }
 
-    @Test("Throws error when credential provider fails")
-    func throwsIfCredentialProviderFails() async {
+    @Test
+    func `Throws error when credential provider fails`() async {
         let provider = makeAuthProvider(.emailPassword)
-        let (sut, delegate) = makeSUT(throwProviderError: true)
+        let sut = makeSUT(throwProviderError: true).sut
 
         await #expect(throws: TestError.credentialTypeProvider) {
             _ = try await sut.linkAction(provider)
         }
+    }
+
+    @Test
+    func `Does not contact delegate when credential provider fails`() async {
+        let provider = makeAuthProvider(.emailPassword)
+        let (sut, delegate) = makeSUT(throwProviderError: true)
+
+        _ = try? await sut.linkAction(provider)
 
         #expect(delegate.providerType == nil)
         #expect(delegate.credentialType == nil)
     }
 
-    @Test("Returns canceled result when credential is nil")
-    func returnsCanceledWhenCredentialIsNil() async throws {
+    @Test
+    func `Returns canceled result when credential is nil`() async throws {
         let provider = makeAuthProvider(.emailPassword)
-        let (sut, delegate) = makeSUT()
+        let sut = makeSUT().sut
 
         let result = try await sut.linkAction(provider)
 
         #expect(result == .canceled)
+    }
+
+    @Test
+    func `Does not contact delegate when credential is nil`() async throws {
+        let provider = makeAuthProvider(.emailPassword)
+        let (sut, delegate) = makeSUT()
+
+        _ = try await sut.linkAction(provider)
+
         #expect(delegate.providerType == nil)
         #expect(delegate.credentialType == nil)
     }
 
-    @Test("Throws error when reauthentication fails")
-    func throwsWhenReauthenticationFails() async {
+    @Test
+    func `Throws error when reauthentication fails`() async {
         let error = TestError.reauth
         let provider = makeAuthProvider(.emailPassword)
         let credential = makeEmailPasswordCredential()
-        let (sut, _) = makeSUT(credentialType: credential, firstResult: .failure(error))
+        let sut = makeSUT(credentialType: credential, firstResult: .failure(error)).sut
 
         await #expect(throws: error) {
             _ = try await sut.linkAction(provider)
         }
     }
 
-    @Test("Retries linking after successful reauthentication")
-    func retriesAfterReauth() async {
+    @Test
+    func `Retries linking after successful reauthentication`() async {
         let error = TestError.postReauthorizationAction
         let provider = makeAuthProvider(.emailPassword)
         let credential = makeEmailPasswordCredential()
-        let (sut, _) = makeSUT(credentialType: credential, firstResult: .reauthRequired, secondResult: .failure(error))
+        let sut = makeSUT(credentialType: credential, firstResult: .reauthRequired, secondResult: .failure(error)).sut
 
         await #expect(throws: error) {
             _ = try await sut.linkAction(provider)
         }
     }
 
-    @Test("Unlinks provider when more than one is linked")
-    func unlinksWhenMultipleProvidersExist() async throws {
+    @Test
+    func `Returns success when unlinking with multiple linked providers`() async throws {
         let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
         let secondProvider = makeAuthProvider(.apple, email: "tester@apple.com")
-        let (sut, delegate) = makeSUT(providers: [provider, secondProvider])
+        let sut = makeSUT(providers: [provider, secondProvider]).sut
 
         let result = try await sut.linkAction(provider)
 
         #expect(result == .success)
+    }
+
+    @Test
+    func `Sends provider type to delegate when unlinking with multiple linked providers`() async throws {
+        let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
+        let secondProvider = makeAuthProvider(.apple, email: "tester@apple.com")
+        let (sut, delegate) = makeSUT(providers: [provider, secondProvider])
+
+        _ = try await sut.linkAction(provider)
+
         #expect(delegate.providerType == provider.type)
     }
 
-    @Test("Throws when trying to unlink the only linked provider")
-    func throwsIfUnlinkingOnlyLinkedProvider() async {
+    @Test
+    func `Throws when trying to unlink the only linked provider`() async {
         let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
-        let (sut, _) = makeSUT(providers: [provider])
+        let sut = makeSUT(providers: [provider]).sut
 
         await #expect(throws: CredentialError.cannotUnlinkOnlyProvider) {
             _ = try await sut.linkAction(provider)
@@ -104,43 +141,43 @@ struct AccountLinkViewModelTests {
 
 // MARK: - Button Display Tests
 extension AccountLinkViewModelTests {
-    @Test("Shows button when prevent flag disabled")
-    func showsButtonWhenPreventFlagDisabled() {
+    @Test
+    func `Shows button when prevent flag disabled`() {
         let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
-        let (sut, _) = makeSUT(providers: [provider], preventUnlinkingLastProvider: false)
+        let sut = makeSUT(providers: [provider], preventUnlinkingLastProvider: false).sut
 
         #expect(sut.shouldShowButton(for: provider))
     }
 
-    @Test("Shows button for unlinked provider when prevent flag enabled")
-    func showsButtonForUnlinkedProviderWhenPreventFlagEnabled() {
+    @Test
+    func `Shows button for unlinked provider when prevent flag enabled`() {
         let provider = makeAuthProvider(.emailPassword)
-        let (sut, _) = makeSUT(providers: [provider], preventUnlinkingLastProvider: true)
+        let sut = makeSUT(providers: [provider], preventUnlinkingLastProvider: true).sut
 
         #expect(sut.shouldShowButton(for: provider))
     }
 
-    @Test("Shows button for linked provider when multiple providers linked and prevent flag enabled")
-    func showsButtonForLinkedProviderWhenMultipleProvidersLinkedAndPreventFlagEnabled() {
+    @Test
+    func `Shows button for linked provider when multiple providers linked and prevent flag enabled`() {
         let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
         let secondProvider = makeAuthProvider(.apple, email: "tester@apple.com")
-        let (sut, _) = makeSUT(providers: [provider, secondProvider], preventUnlinkingLastProvider: true)
+        let sut = makeSUT(providers: [provider, secondProvider], preventUnlinkingLastProvider: true).sut
 
         #expect(sut.shouldShowButton(for: provider))
     }
 
-    @Test("Hides button for linked provider when only provider linked and prevent flag enabled")
-    func hidesButtonForLinkedProviderWhenOnlyProviderLinkedAndPreventFlagEnabled() {
+    @Test
+    func `Hides button for linked provider when only provider linked and prevent flag enabled`() {
         let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
-        let (sut, _) = makeSUT(providers: [provider], preventUnlinkingLastProvider: true)
+        let sut = makeSUT(providers: [provider], preventUnlinkingLastProvider: true).sut
 
         #expect(!sut.shouldShowButton(for: provider))
     }
 
-    @Test("Shows button for linked provider when only provider linked and prevent flag disabled")
-    func showsButtonForLinkedProviderWhenOnlyProviderLinkedAndPreventFlagDisabled() {
+    @Test
+    func `Shows button for linked provider when only provider linked and prevent flag disabled`() {
         let provider = makeAuthProvider(.emailPassword, email: "tester@gmail.com")
-        let (sut, _) = makeSUT(providers: [provider], preventUnlinkingLastProvider: false)
+        let sut = makeSUT(providers: [provider], preventUnlinkingLastProvider: false).sut
 
         #expect(sut.shouldShowButton(for: provider))
     }
@@ -152,12 +189,16 @@ private extension AccountLinkViewModelTests {
     func makeSUT(providers: [AuthProvider] = [], credentialType: CredentialType? = nil, firstResult: AccountCredentialResult = .success, secondResult: AccountCredentialResult = .success, throwProviderError: Bool = false, throwReauthError: Bool = false, preventUnlinkingLastProvider: Bool = false) -> (sut: AccountLinkViewModel, delegate: MockDelegate) {
         let delegate = MockDelegate(firstResult: firstResult, secondResult: secondResult, supportedProviders: providers)
         let auth = MockReauthenticator(throwError: throwReauthError)
-        let provider = StubProvider(credentialType: credentialType, throwError: throwProviderError)
+        let provider = MockCredentialProvider(credentialType: credentialType, throwError: throwProviderError)
         let sut = AccountLinkViewModel(providers: providers, delegate: delegate, reauthenticator: auth, credentialProvider: provider, preventUnlinkingLastProvider: preventUnlinkingLastProvider)
 
         return (sut, delegate)
     }
-    
+}
+
+
+// MARK: - Helpers
+private extension AccountLinkViewModelTests {
     func makeAuthProvider(_ type: AuthProviderType, email: String = "") -> AuthProvider {
         return .init(linkedEmail: email, type: type)
     }
@@ -168,9 +209,9 @@ private extension AccountLinkViewModelTests {
 }
 
 
-// MARK: - Helper Classes
+// MARK: - Mocks
 private extension AccountLinkViewModelTests {
-    final class StubProvider: CredentialTypeProvider {
+    final class MockCredentialProvider: CredentialTypeProvider {
         private let throwError: Bool
         private let credentialType: CredentialType?
 
@@ -216,18 +257,5 @@ private extension AccountLinkViewModelTests {
         // MARK: - Unused
         func loadLinkedProviders() -> [AuthProvider] { [] }
         func reauthenticate(with credientialType: CredentialType) async throws { }
-    }
-}
-
-extension CredentialType {
-    var id: String {
-        switch self {
-        case .apple:
-            return "apple"
-        case .google:
-            return "google"
-        case .emailPassword:
-            return "emailPassword"
-        }
     }
 }
