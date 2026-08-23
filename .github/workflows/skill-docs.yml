@@ -1,0 +1,56 @@
+name: Skill docs
+
+on:
+  pull_request:
+
+jobs:
+  skill-in-sync:
+    name: Skills/ updated with public API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require a Skills/ update when the public API changes
+        env:
+          # Set to "1" to report without failing while easing the rule in.
+          ADVISORY: "0"
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+
+          if printf '%s' "$LABELS" | tr ',' '\n' | grep -qx 'skip-skill-check'; then
+            echo "Waived by the skip-skill-check label."
+            exit 0
+          fi
+
+          # Added/removed lines that declare API visible outside their file.
+          # File headers (+++/---) are excluded so renames don't count as changes.
+          api=$(git diff "$BASE_SHA...$HEAD_SHA" -- 'Sources/**/*.swift' \
+                | grep -E '^[+-]' \
+                | grep -vE '^(\+\+\+|---)' \
+                | grep -cE '\b(public|open|package)\b' || true)
+
+          docs=$(git diff --name-only "$BASE_SHA...$HEAD_SHA" -- 'Skills/**' | wc -l | tr -d ' ')
+
+          echo "public/open/package declaration lines changed: $api"
+          echo "files touched under Skills/: $docs"
+
+          if [ "$api" -gt 0 ] && [ "$docs" -eq 0 ]; then
+            echo "::error::Public API changed but Skills/ was untouched."
+            echo ""
+            echo "The skill under Skills/ is the published API reference. It lives in this"
+            echo "repo so it changes in the same PR as the API it documents — when these"
+            echo "lived in separate repos they drifted apart for months at a time."
+            echo ""
+            echo "Either update it here, or add the 'skip-skill-check' label if this PR"
+            echo "genuinely changes no documented behavior (reformatting, renaming a"
+            echo "parameter, moving a file)."
+            [ "$ADVISORY" = "1" ] && { echo "ADVISORY mode — not failing."; exit 0; }
+            exit 1
+          fi
+
+          echo "OK"
