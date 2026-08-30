@@ -1,0 +1,133 @@
+name: Bump skill ref
+
+# Pinning the marketplace entry to a tag means every release needs the manifest
+# updated in the marketplace repo. That is a cross-repo step, and a cross-repo
+# step nobody enforces is exactly what this migration exists to eliminate — so
+# it is automated here rather than written down as a convention.
+#
+# Requires a repo secret MARKETPLACE_TOKEN: a PAT (or fine-grained token) with
+# contents:write and pull-requests:write on the marketplace repo.
+
+#
+# template-version: 2
+#
+# Bumped whenever this file changes. sync-package-workflows.sh compares the stamp in a
+# repo's installed copy against this one, so a repo running an older template is a grep
+# rather than an investigation. A copy with no stamp at all is version 1.
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to pin the marketplace entry to
+        required: true
+
+jobs:
+  bump:
+    name: Point the marketplace at this tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve inputs
+        id: cfg
+        env:
+          # ---- set these three per package ----
+          SKILL_NAME: NnCredentialKit
+          MARKETPLACE_REPO: nikolainobadi/nn-swift-skills
+          MARKETPLACE_BRANCH: main
+          # -------------------------------------
+          EVENT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          [ "$SKILL_NAME" = "CHANGE_ME" ] && { echo "::error::Set SKILL_NAME in this workflow."; exit 1; }
+          [ -n "$EVENT_TAG" ] || { echo "::error::No tag resolved."; exit 1; }
+          {
+            echo "skill=$SKILL_NAME"
+            echo "repo=$MARKETPLACE_REPO"
+            echo "branch=$MARKETPLACE_BRANCH"
+            echo "tag=$EVENT_TAG"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check out the marketplace
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.cfg.outputs.repo }}
+          token: ${{ secrets.MARKETPLACE_TOKEN }}
+          ref: ${{ steps.cfg.outputs.branch }}
+          path: marketplace
+
+      - name: Rewrite the ref
+        id: edit
+        env:
+          SKILL: ${{ steps.cfg.outputs.skill }}
+          TAG: ${{ steps.cfg.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, sys, pathlib
+          skill, tag = os.environ["SKILL"], os.environ["TAG"]
+          p = pathlib.Path("marketplace/.claude-plugin/marketplace.json")
+          text = p.read_text()
+          d = json.loads(text)
+
+          entry = next((x for x in d["plugins"] if x.get("name") == skill), None)
+          if entry is None:
+              sys.exit(f"::error::No '{skill}' entry in {p}. Run the migration's Repoint step first.")
+          src = entry.get("source")
+          if not isinstance(src, dict) or src.get("source") != "git-subdir":
+              sys.exit(f"::error::'{skill}' is not a git-subdir source; refusing to edit.")
+
+          old = src.get("ref")
+          if old == tag:
+              print(f"Already pinned to {tag}.")
+              pathlib.Path(os.environ["GITHUB_OUTPUT"]).write_text("changed=false\n")
+              raise SystemExit(0)
+
+          # Surgical replacement: a json.dumps round-trip would reformat the whole
+          # manifest and bury the one-line change in noise.
+          if old is None:
+              needle = f'"path": "Skills/{skill}"'
+              if text.count(needle) != 1:
+                  sys.exit("::error::Could not uniquely locate the path line; edit by hand.")
+              text = text.replace(needle, f'{needle},\n      "ref": "{tag}"')
+          else:
+              needle = f'"ref": "{old}"'
+              if text.count(needle) != 1:
+                  sys.exit(f"::error::'{needle}' is not unique; edit by hand.")
+              text = text.replace(needle, f'"ref": "{tag}"')
+
+          json.loads(text)  # fail loudly rather than commit invalid JSON
+          p.write_text(text)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write("changed=true\n")
+              fh.write(f"old={old or 'unpinned'}\n")
+          print(f"{skill}: {old or 'unpinned'} -> {tag}")
+          PY
+
+      - name: Open the bump PR
+        if: steps.edit.outputs.changed == 'true'
+        working-directory: marketplace
+        env:
+          GH_TOKEN: ${{ secrets.MARKETPLACE_TOKEN }}
+          SKILL: ${{ steps.cfg.outputs.skill }}
+          TAG: ${{ steps.cfg.outputs.tag }}
+          OLD: ${{ steps.edit.outputs.old }}
+          BASE: ${{ steps.cfg.outputs.branch }}
+        run: |
+          set -euo pipefail
+          BRANCH="bump/${SKILL}-${TAG}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add .claude-plugin/marketplace.json
+          git commit -m "chore: pin ${SKILL} to ${TAG}"
+          git push -u origin "$BRANCH" --force-with-lease
+          gh pr create --base "$BASE" --head "$BRANCH" \
+            --title "chore: pin ${SKILL} to ${TAG}" \
+            --body "Automated by \`${GITHUB_REPOSITORY}\` on release \`${TAG}\`.
+
+          Moves the \`${SKILL}\` marketplace entry from \`${OLD}\` to \`${TAG}\`.
+
+          Until this merges, the marketplace serves the previous release's documentation."

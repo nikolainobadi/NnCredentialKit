@@ -1,6 +1,6 @@
 {
   "enabledPlugins": {
-    "NnCredentialKit@nelix-swift-tools": true,
+    "NnCredentialKit@nn-swift-skills": true,
     "NnTesting@nelix-swift-tools": true
   }
 }
