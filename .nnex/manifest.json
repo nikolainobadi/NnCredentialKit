@@ -1,0 +1,38 @@
+{
+  "release" : {
+    "branch" : "main",
+    "tagStyle" : "bare"
+  },
+  "targets" : [
+    {
+      "build" : {
+        "runBuild" : true,
+        "runTests" : true,
+        "verifyCommand" : "xcodebuild -scheme NnCredentialKit-Package -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test"
+      },
+      "documents" : {
+        "changelog" : {
+          "review" : true
+        },
+        "claudeMd" : {
+          "review" : false
+        },
+        "readme" : {
+          "review" : false
+        },
+        "referenceSkill" : {
+          "path" : "Skills/NnCredentialKit/skills/NnCredentialKit",
+          "review" : false
+        },
+        "releaseNotes" : {
+          "review" : true
+        }
+      },
+      "name" : "NnCredentialKit",
+      "projectType" : "swiftPackage",
+      "version" : {
+        "kind" : "none"
+      }
+    }
+  ]
+}
