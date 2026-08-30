@@ -51,7 +51,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Check out the marketplace
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ steps.cfg.outputs.repo }}
           token: ${{ secrets.MARKETPLACE_TOKEN }}

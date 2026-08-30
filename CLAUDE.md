@@ -14,7 +14,7 @@ NnCredentialKit is a Swift Package providing authentication workflows for iOS ap
 
 ```bash
 # Run tests (only when explicitly requested)
-xcodebuild -scheme NnCredentialKit -destination 'platform=iOS Simulator,name=iPhone 16' test
+xcodebuild test -scheme NnCredentialKit-Package -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
 ## Firebase Integration
