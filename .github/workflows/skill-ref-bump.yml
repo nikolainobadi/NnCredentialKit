@@ -8,6 +8,13 @@ name: Bump skill ref
 # Requires a repo secret MARKETPLACE_TOKEN: a PAT (or fine-grained token) with
 # contents:write and pull-requests:write on the marketplace repo.
 
+#
+# template-version: 2
+#
+# Bumped whenever this file changes. sync-package-workflows.sh compares the stamp in a
+# repo's installed copy against this one, so a repo running an older template is a grep
+# rather than an investigation. A copy with no stamp at all is version 1.
+
 on:
   push:
     tags:

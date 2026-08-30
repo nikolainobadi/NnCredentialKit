@@ -1,5 +1,12 @@
 name: Skill docs
 
+#
+# template-version: 2
+#
+# Bumped whenever this file changes. sync-package-workflows.sh compares the stamp in a
+# repo's installed copy against this one, so a repo running an older template is a grep
+# rather than an investigation. A copy with no stamp at all is version 1.
+
 on:
   pull_request:
 
@@ -29,15 +36,34 @@ jobs:
 
           # Added/removed lines that declare API visible outside their file.
           # File headers (+++/---) are excluded so renames don't count as changes.
+          # Comment lines are excluded so rewording a doc comment that happens to
+          # contain the word "public" does not read as an API change.
+          #
+          # Two patterns, because a package usually declares much of its public
+          # surface inside `public extension` blocks and `public enum` bodies —
+          # those member lines carry no visibility keyword of their own, so a
+          # keyword-only grep misses them entirely:
+          #   1. an explicit visibility keyword on the changed line
+          #   2. any changed func/init/subscript/case declaration
+          # (2) also matches internal declarations; that over-fires rather than
+          # under-fires, and the skip-skill-check label is the escape hatch.
+          #
+          # Known gap: a signature spread over several lines changes a line that
+          # carries no keyword at all (`value: Data`), so neither pattern sees it.
+          # Closing that needs a real API diff (swift-api-digester) on a macOS
+          # runner rather than a grep.
           api=$(git diff "$BASE_SHA...$HEAD_SHA" -- 'Sources/**/*.swift' \
                 | grep -E '^[+-]' \
                 | grep -vE '^(\+\+\+|---)' \
-                | grep -cE '\b(public|open|package)\b' || true)
+                | grep -vE '^[+-][[:space:]]*(///|//)' \
+                | grep -cE '\b(public|open|package)\b|^[+-][[:space:]]*(@[A-Za-z]+[[:space:]]+)*((final|static|class|convenience|mutating|override|required)[[:space:]]+)*(func|init|subscript|case)\b' || true)
 
-          docs=$(git diff --name-only "$BASE_SHA...$HEAD_SHA" -- 'Skills/**' | wc -l | tr -d ' ')
+          # Plugin metadata is excluded: bumping a version in .claude-plugin/ is not
+          # documenting anything, and without this it satisfies the check on its own.
+          docs=$(git diff --name-only "$BASE_SHA...$HEAD_SHA" -- 'Skills/**' ':(exclude)Skills/**/.claude-plugin/**' | wc -l | tr -d ' ')
 
-          echo "public/open/package declaration lines changed: $api"
-          echo "files touched under Skills/: $docs"
+          echo "API declaration lines changed: $api"
+          echo "documentation files touched under Skills/: $docs"
 
           if [ "$api" -gt 0 ] && [ "$docs" -eq 0 ]; then
             echo "::error::Public API changed but Skills/ was untouched."
