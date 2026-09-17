@@ -32,12 +32,6 @@ The published `NnCredentialKit` skill — the API reference consumers install �
 It is served to Claude Code by the public `nn-swift-skills` marketplace as a `git-subdir` source
 pinned to a release tag.
 
-**Any PR that changes the public API must also update `Skills/`.** The `skill-docs` workflow
-enforces this: a diff touching `public`/`open`/`package` declarations under `Sources/**/*.swift`
-with no file touched under `Skills/**` fails the check. Waive it with the `skip-skill-check` label
-only when the API diff genuinely changes no documented behavior (a rename in a private extension
-that happens to match the grep, for example).
-
 `Skills/NnCredentialKit/.claude-plugin/plugin.json` deliberately has **no `version` field**, and one
 must not be reintroduced. Git-based plugin sources are cached by commit sha, so a hand-typed version
 number is unverified by anything and goes stale silently — exactly the drift this arrangement exists
