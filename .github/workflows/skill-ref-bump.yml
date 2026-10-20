@@ -9,7 +9,7 @@ name: Bump skill ref
 # contents:write and pull-requests:write on the marketplace repo.
 
 #
-# template-version: 2
+# template-version: 4
 #
 # Bumped whenever this file changes. sync-package-workflows.sh compares the stamp in a
 # repo's installed copy against this one, so a repo running an older template is a grep
@@ -33,10 +33,14 @@ jobs:
       - name: Resolve inputs
         id: cfg
         env:
-          # ---- set these three per package ----
+          # ---- set these four per package ----
           SKILL_NAME: NnCredentialKit
           MARKETPLACE_REPO: nikolainobadi/nn-swift-skills
           MARKETPLACE_BRANCH: main
+          # The one tag cut before Repoint creates the marketplace entry. That run has
+          # nothing to edit, and naming the tag here lets it pass instead of going red.
+          # It expires on its own: no later tag equals it. Leave empty to never allow it.
+          BOOTSTRAP_TAG: ""
           # -------------------------------------
           EVENT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
         run: |
@@ -48,6 +52,7 @@ jobs:
             echo "repo=$MARKETPLACE_REPO"
             echo "branch=$MARKETPLACE_BRANCH"
             echo "tag=$EVENT_TAG"
+            echo "bootstrap=$BOOTSTRAP_TAG"
           } >> "$GITHUB_OUTPUT"
 
       - name: Check out the marketplace
@@ -63,17 +68,36 @@ jobs:
         env:
           SKILL: ${{ steps.cfg.outputs.skill }}
           TAG: ${{ steps.cfg.outputs.tag }}
+          BOOTSTRAP: ${{ steps.cfg.outputs.bootstrap }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json, os, sys, pathlib
           skill, tag = os.environ["SKILL"], os.environ["TAG"]
+          bootstrap = os.environ.get("BOOTSTRAP", "")
+
+          def skip(message):
+              """Nothing to change: say why, report it, and leave the run green."""
+              print(message)
+              with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                  fh.write("changed=false\n")
+              raise SystemExit(0)
+
           p = pathlib.Path("marketplace/.claude-plugin/marketplace.json")
           text = p.read_text()
           d = json.loads(text)
 
           entry = next((x for x in d["plugins"] if x.get("name") == skill), None)
           if entry is None:
+              # Migration cuts the tag before Repoint publishes the entry, so that one run has
+              # nothing to edit. BOOTSTRAP_TAG names it and lets it pass. Any *other* tag with a
+              # missing entry is a real regression -- a renamed or typo'd entry would otherwise
+              # serve the previous release's docs forever with nothing erroring -- so it stays
+              # loud. An empty BOOTSTRAP_TAG matches no tag, which is why repos that never set
+              # one keep the strict behavior.
+              if bootstrap and tag == bootstrap:
+                  skip(f"::notice::No '{skill}' entry yet; {tag} is the bootstrap tag. "
+                       "Repoint publishes it, then re-run this workflow.")
               sys.exit(f"::error::No '{skill}' entry in {p}. Run the migration's Repoint step first.")
           src = entry.get("source")
           if not isinstance(src, dict) or src.get("source") != "git-subdir":
@@ -81,22 +105,31 @@ jobs:
 
           old = src.get("ref")
           if old == tag:
-              print(f"Already pinned to {tag}.")
-              pathlib.Path(os.environ["GITHUB_OUTPUT"]).write_text("changed=false\n")
-              raise SystemExit(0)
+              skip(f"Already pinned to {tag}.")
 
           # Surgical replacement: a json.dumps round-trip would reformat the whole
-          # manifest and bury the one-line change in noise.
+          # manifest and bury the one-line change in noise. The search is confined to
+          # this skill's entry, because another package can share the same version
+          # number -- a file-wide '"ref": "2.2.1"' matched NnTesting's pin as well.
+          name_line = f'"name": "{skill}"'
+          if text.count(name_line) != 1:
+              sys.exit(f"::error::Could not uniquely locate '{name_line}'; edit by hand.")
+          start = text.index(name_line)
+          next_entry = text.find('"name": "', start + len(name_line))
+          end = len(text) if next_entry == -1 else next_entry
+          span = text[start:end]
+
           if old is None:
               needle = f'"path": "Skills/{skill}"'
-              if text.count(needle) != 1:
+              if span.count(needle) != 1:
                   sys.exit("::error::Could not uniquely locate the path line; edit by hand.")
-              text = text.replace(needle, f'{needle},\n      "ref": "{tag}"')
+              span = span.replace(needle, f'{needle},\n      "ref": "{tag}"')
           else:
               needle = f'"ref": "{old}"'
-              if text.count(needle) != 1:
-                  sys.exit(f"::error::'{needle}' is not unique; edit by hand.")
-              text = text.replace(needle, f'"ref": "{tag}"')
+              if span.count(needle) != 1:
+                  sys.exit(f"::error::'{needle}' is not unique in the '{skill}' entry; edit by hand.")
+              span = span.replace(needle, f'"ref": "{tag}"')
+          text = text[:start] + span + text[end:]
 
           json.loads(text)  # fail loudly rather than commit invalid JSON
           p.write_text(text)
