@@ -1,10 +1,3 @@
-//
-//  CredentialType+TestHelpers.swift
-//  NnCredentialKit
-//
-//  Created by Nikolai Nobadi on 6/6/26.
-//
-
 @testable import NnCredentialKit
 
 extension CredentialType {

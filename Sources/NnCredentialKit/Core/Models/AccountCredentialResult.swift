@@ -1,10 +1,3 @@
-//
-//  AccountCredentialResult.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 /// An enum representing the result of an account credential operation.
 public enum AccountCredentialResult: Sendable {
     /// The operation was successful.

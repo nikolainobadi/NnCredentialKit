@@ -1,10 +1,3 @@
-//
-//  PublicDelegates.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/13/24.
-//
-
 /// A protocol defining the required methods for deleting an account.
 public protocol DeleteAccountDelegate: ReauthenticationDelegate {
     /// Deletes the user's account.

@@ -1,10 +1,3 @@
-//
-//  AppleCredentialConverter.swift
-//  NnCredentialKit
-//
-//  Created by Nikolai Nobadi on 9/28/25.
-//
-
 import Foundation
 
 struct AppleCredentialConverter: Sendable {

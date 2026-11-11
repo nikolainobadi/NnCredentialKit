@@ -1,10 +1,3 @@
-//
-//  DefaultAppleAuthSession.swift
-//  NnCredentialKit
-//
-//  Created by Nikolai Nobadi on 9/28/25.
-//
-
 import AuthenticationServices
 
 final class DefaultAppleAuthSession: NSObject {

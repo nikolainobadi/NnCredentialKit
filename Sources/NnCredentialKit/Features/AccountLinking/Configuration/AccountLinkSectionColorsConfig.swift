@@ -1,10 +1,3 @@
-//
-//  AccountLinkSectionColorsConfig.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/3/24.
-//
-
 import SwiftUI
 
 /// A configuration structure for customizing the colors of the account link section.

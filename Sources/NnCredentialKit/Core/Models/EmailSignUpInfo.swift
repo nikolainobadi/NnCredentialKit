@@ -1,10 +1,3 @@
-//
-//  EmailSignUpInfo.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 /// A structure representing the information collected during email sign-up.
 struct EmailSignUpInfo {
     /// The email address provided during sign-up.

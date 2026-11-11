@@ -1,10 +1,3 @@
-//
-//  StubResultStore.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 import NnCredentialKit
 
 final class StubResultStore {

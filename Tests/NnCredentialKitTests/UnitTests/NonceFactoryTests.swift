@@ -1,10 +1,3 @@
-//
-//  NonceFactoryTests.swift
-//  NnCredentialKit
-//
-//  Created by Nikolai Nobadi on 9/28/25.
-//
-
 import Testing
 @testable import NnCredentialKit
 

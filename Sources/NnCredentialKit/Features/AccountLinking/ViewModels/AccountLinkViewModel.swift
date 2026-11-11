@@ -1,10 +1,3 @@
-//
-//  AccountLinkViewModel.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/1/24.
-//
-
 import Foundation
 
 /// A view model responsible for managing account link/unlink actions.

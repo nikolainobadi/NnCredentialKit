@@ -1,10 +1,3 @@
-//
-//  AccountLinkViewModel+ConvenienceInit.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/3/24.
-//
-
 import AuthenticationServices
 
 /// An extension to `AccountLinkViewModel` that provides convenience initializers.

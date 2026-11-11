@@ -1,10 +1,3 @@
-//
-//  AccountLinkSection.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/1/24.
-//
-
 import SwiftUI
 import AuthenticationServices
 import NnCredentialKitAccessibility

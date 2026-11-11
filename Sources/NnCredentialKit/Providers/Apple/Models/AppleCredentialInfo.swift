@@ -1,10 +1,3 @@
-//
-//  AppleCredentialInfo.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/3/24.
-//
-
 /// A structure representing the credentials obtained from Apple Sign-In.
 public struct AppleCredentialInfo: Sendable {
     /// A nonce used to verify the identity token.

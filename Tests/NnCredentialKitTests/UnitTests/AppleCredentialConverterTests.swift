@@ -1,10 +1,3 @@
-//
-//  AppleCredentialConverterTests.swift
-//  NnCredentialKitTests
-//
-//  Created by Nikolai Nobadi on 12/28/24.
-//
-
 import Testing
 import Foundation
 @testable import NnCredentialKit
