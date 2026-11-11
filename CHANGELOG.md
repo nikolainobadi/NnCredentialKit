@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [3.3.1] - 2026-11-11
+### Added
+- `NnCredentialKit` API reference skill in `Skills/NnCredentialKit`, covering core models and delegates, authentication workflows, and Apple and Google sign-in providers
+
 ## [3.3.0] - 2026-06-06
 ### Added
 - `debugEnabled` parameter to `AccountLinkSection`, `AccountLinkViewModel`, `SocialCredentialManager`, `AccountDeleter`, `AppleSignInService`, and `GoogleSignInService` to print credential workflow details to the console for troubleshooting (defaults to `false`)
@@ -86,7 +90,8 @@
 - Comprehensive error handling with CredentialError types
 - Alert handler for user-friendly error messages
 
-[Unreleased]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/nikolainobadi/NnCredentialKit/compare/3.3.1...HEAD
+[3.3.1]: https://github.com/nikolainobadi/NnCredentialKit/compare/3.3.0...3.3.1
 [3.3.0]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/nikolainobadi/NnCredentialKit/compare/v3.0.1...v3.1.0

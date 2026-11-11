@@ -45,15 +45,6 @@ The marketplace entry for this skill is pinned to a release tag, not to `main`. 
   for anyone reading the skill until the next tag is pushed. This is intentional — the docs a
   consumer reads always describe a version they can actually depend on — but it surprises people who
   just merged a fix and cannot see it.
-- **The pin is bumped automatically.** `.github/workflows/skill-ref-bump.yml` fires on tag push,
-  rewrites `ref` in `nikolainobadi/nn-swift-skills`, and opens a PR there. If that automation is
-  ever removed, the bump becomes a manual cross-repo step — and an unbumped `ref` serves the
-  previous release's docs forever, with nothing erroring and nothing warning.
-
-The bump workflow authenticates with the `MARKETPLACE_TOKEN` repo secret: a fine-grained PAT named
-`nn-swift-skills-ref-bump`, granting only `contents:write` and `pull-requests:write` on the
-marketplace repo. **It is shared across every package repo that publishes a skill**, so when it
-expires or is revoked the bump breaks in all of them at once and each needs the secret set again —
-a failed bump run reading `Bad credentials` means *rotate the shared token*, not *this repo's
-workflow is broken*. Its expiry is visible under GitHub → Settings → Developer settings →
-Fine-grained tokens; the value itself cannot be read back from any repo once set.
+- **The pin requires a manual cross-repo update.** Update the skill entry's `ref` in
+  `nikolainobadi/nn-swift-skills` to the release tag. This repository has no tag-push workflow
+  to bump it; an unbumped `ref` continues serving the previous release's docs.
