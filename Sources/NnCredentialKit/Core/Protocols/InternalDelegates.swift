@@ -1,10 +1,3 @@
-//
-//  Delegates.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 /// A protocol defining the required methods for handling reauthentication flows.
 @MainActor
 protocol Reauthenticator {

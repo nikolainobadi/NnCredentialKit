@@ -1,10 +1,3 @@
-//
-//  DefaultNonceProvider.swift
-//  NnCredentialKit
-//
-//  Created by Nikolai Nobadi on 9/28/25.
-//
-
 struct DefaultNonceProvider: NonceProvider {
     func make() -> String {
         return NonceFactory.randomNonceString()

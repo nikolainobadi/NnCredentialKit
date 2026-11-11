@@ -1,10 +1,3 @@
-//
-//  CredentialManager.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 import Foundation
 
 /// A class responsible for managing credentials for various authentication providers.

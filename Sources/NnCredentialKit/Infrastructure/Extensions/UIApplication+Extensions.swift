@@ -1,10 +1,3 @@
-//
-//  UIApplication+Extensions.swift
-//
-//
-//  Created by Nikolai Nobadi on 10/1/24.
-//
-
 import UIKit
 
 /// Extension for UIApplication to provide additional utility methods.

@@ -1,10 +1,3 @@
-//
-//  CredentialManager+ConvenienceInit.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/3/24.
-//
-
 import AuthenticationServices
 
 /// An extension to `CredentialManager` that provides convenience initializers.

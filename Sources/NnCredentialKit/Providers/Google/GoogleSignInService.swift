@@ -1,10 +1,3 @@
-//
-//  GoogleSignInService.swift
-//  NnCredentialKit
-//
-//  Created by Nikolai Nobadi on 9/29/25.
-//
-
 import UIKit
 
 @MainActor

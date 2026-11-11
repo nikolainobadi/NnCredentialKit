@@ -1,10 +1,3 @@
-//
-//  CredentialAlertHandler.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 import UIKit
 import NnCredentialKitAccessibility
 

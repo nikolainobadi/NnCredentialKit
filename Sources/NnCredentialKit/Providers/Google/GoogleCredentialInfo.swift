@@ -1,10 +1,3 @@
-//
-//  GoogleCredentialInfo.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/3/24.
-//
-
 /// A structure representing the credentials obtained from Google Sign-In.
 public struct GoogleCredentialInfo: Sendable {
     /// The user's email address.

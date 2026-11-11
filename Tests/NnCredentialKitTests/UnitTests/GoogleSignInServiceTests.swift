@@ -1,10 +1,3 @@
-//
-//  GoogleSignInServiceTests.swift
-//  NnCredentialKit
-//
-//  Created by Nikolai Nobadi on 9/29/25.
-//
-
 import Testing
 @testable import NnCredentialKit
 

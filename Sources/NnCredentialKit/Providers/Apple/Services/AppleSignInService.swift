@@ -1,10 +1,3 @@
-//
-//  AppleSignInService.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/3/24.
-//
-
 import AuthenticationServices
 
 /// A service responsible for managing the Apple Sign-In process.

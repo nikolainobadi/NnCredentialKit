@@ -1,10 +1,3 @@
-//
-//  AccountDeleter.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 /// A class responsible for managing the account deletion process.
 @MainActor
 public final class AccountDeleter {

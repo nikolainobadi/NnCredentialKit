@@ -1,10 +1,3 @@
-//
-//  ReauthenticationManager.swift
-//
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 import Foundation
 
 /// A manager responsible for handling reauthentication flows.

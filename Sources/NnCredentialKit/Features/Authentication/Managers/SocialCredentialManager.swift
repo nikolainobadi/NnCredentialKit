@@ -1,10 +1,3 @@
-//
-//  SocialCredentialManager.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/3/24.
-//
-
 import UIKit
 import AuthenticationServices
 

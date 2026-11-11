@@ -1,10 +1,3 @@
-//
-//  AppleSignInServiceTests.swift
-//  NnCredentialKit
-//
-//  Created by Nikolai Nobadi on 9/28/25.
-//
-
 import Testing
 import AuthenticationServices
 @testable import NnCredentialKit

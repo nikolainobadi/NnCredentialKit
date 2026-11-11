@@ -1,5 +1,3 @@
-// AccountLinkViewModelTests.swift
-
 import Testing
 @testable import NnCredentialKit
 

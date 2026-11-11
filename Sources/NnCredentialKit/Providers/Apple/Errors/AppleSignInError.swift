@@ -1,10 +1,3 @@
-//
-//  AppleSignInError.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/3/24.
-//
-
 /// An enum representing common errors that can occur during Apple Sign-In.
 public enum AppleSignInError: Error {
     /// The sign-in process encountered an invalid state.

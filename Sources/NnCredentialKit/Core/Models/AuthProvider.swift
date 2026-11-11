@@ -1,10 +1,3 @@
-//
-//  AuthProvider.swift
-//  
-//
-//  Created by Nikolai Nobadi on 8/2/24.
-//
-
 import Foundation
 
 /// A structure representing an authentication provider and its associated credentials.
