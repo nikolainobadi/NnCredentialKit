@@ -1,0 +1,16 @@
+{
+  "targets" : [
+    {
+      "buildAndTestCommands" : [
+        "xcodebuild build-for-testing -scheme NnCredentialKit-Package -destination 'platform=iOS Simulator,name=iPhone 17'",
+        "xcodebuild test-without-building -scheme NnCredentialKit-Package -destination 'platform=iOS Simulator,name=iPhone 17'"
+      ],
+      "name" : "NnCredentialKit",
+      "path" : ".",
+      "skills" : [
+        "Skills/NnCredentialKit"
+      ],
+      "targetType" : "library"
+    }
+  ]
+}
